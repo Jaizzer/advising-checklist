@@ -25,7 +25,7 @@ CREATE TABLE `CourseCorequisite` (
     `CourseID` VARCHAR(200) NOT NULL,
     `Corequisite` VARCHAR(200) NOT NULL,
     FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`Corequisite`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCASDE
+    FOREIGN KEY (`Corequisite`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
 )
 
 CREATE TABLE `CoursePrerequisite` (
