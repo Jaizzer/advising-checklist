@@ -1,12 +1,14 @@
 import mysql from 'mysql2';
+import dotenv from 'dotenv';
 
-// Create pool of connections to the Advising_Checklist database
+dotenv.config();
+
 const pool = mysql
 	.createPool({
-		host: '127.0.0.1',
-		user: 'root',
-		password: 'root',
-		database: 'Advising_Checklist',
+		host: process.env.MYSQL_HOST,
+		user: process.env.MYSQL_USER,
+		password: process.env.MYSQL_PASSWORD,
+		database: process.env.MYSQL_DATABASE,
 	})
 	.promise();
 
