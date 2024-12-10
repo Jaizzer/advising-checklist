@@ -1,6 +1,7 @@
 import express from 'express';
 import { getCourse, insertCourse } from './course.js';
 import { insertAdviser } from './adviser.js';
+import { insertStudent } from './student.js';
 import cors from 'cors';
 
 // Initialize an Express application
@@ -77,6 +78,20 @@ app.post('/advisers', async (req, res) => {
 			success: false,
 			error: `Error occurred: ${error.message}`,
 		});
+	}
+});
+
+app.post('/students', async (req, res) => {
+	const studentData = req.body;
+	try {
+		const result = await insertStudent(studentData);
+		if (result.success) {
+			res.status(201).json({ message: 'Student successfully added!', result: result.result });
+		} else {
+			res.status(400).json({ error: result.error });
+		}
+	} catch (error) {
+		res.status(500).json({ error: `Server error: ${error.message}` });
 	}
 });
 
