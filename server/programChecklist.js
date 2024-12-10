@@ -23,6 +23,18 @@ export async function insertChecklistItem(checklistData) {
 			return { success: false, error: `CourseID ${CourseID} does not exist in the Course table.` };
 		}
 
+		// Check if a row with the same StudentProgram, CourseID, CourseType, PrescribedYear, and PrescribedSemester already exists
+		const [duplicateCheck] = await connection.query(
+			`SELECT COUNT(*) AS count FROM ProgramChecklist WHERE StudentProgram = ? AND CourseID = ? AND CourseType = ? AND PrescribedYear = ? AND PrescribedSemester = ?`,
+			[StudentProgram, CourseID, CourseType, PrescribedYear, PrescribedSemester]
+		);
+
+		if (duplicateCheck[0].count > 0) {
+			// If a duplicate is found, roll back the transaction and return an error message
+			await connection.rollback();
+			return { success: false, error: 'Duplicate checklist item found. Entry already exists.' };
+		}
+
 		// Insert the new checklist item into the 'ProgramChecklist' table, using CURRENT_DATE and CURRENT_TIME for dynamic values
 		const [result] = await connection.query(
 			`INSERT INTO ProgramChecklist (StudentProgram, CourseID, CourseType, PrescribedYear, PrescribedSemester, DateLastUpdated, TimeLastUpdated)
