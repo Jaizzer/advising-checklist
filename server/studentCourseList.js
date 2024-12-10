@@ -1,7 +1,9 @@
 import pool from './database.js';
+import { getCourse } from './course.js';
+import { getStudent } from './student.js';
 
 // Function to insert a new student course record into the StudentCourseList
-export async function insertStudentCourseListItem(studentCourseData) {
+export async function insertstudentCourseListItems(studentCourseData) {
 	// Destructure the student course data object to extract necessary information
 	const { StudentNumber, CourseId, CourseStatus, Grade, StandingTaken, AcademicYear, Semester } = studentCourseData;
 
@@ -44,6 +46,97 @@ export async function insertStudentCourseListItem(studentCourseData) {
 		return { success: true, result };
 	} catch (error) {
 		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
+
+// Function to retrieve checklist items, optionally filtering by StudentNumber and CourseId
+export async function getStudentCourseListItem(StudentNumber = null, CourseId = null) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Begin transaction
+		await connection.beginTransaction();
+
+		let checklistResult;
+
+		// Check if at least one of StudentNumber or CourseId is provided
+		if (StudentNumber || CourseId) {
+			// If both StudentNumber and CourseId are provided, retrieve checklist items for that specific student and course
+			if (StudentNumber && CourseId) {
+				[checklistResult] = await connection.query(
+					`SELECT pc.*, c.* 
+					FROM StudentCourseList pc
+					JOIN Course c ON pc.CourseId = c.CourseId
+					WHERE pc.StudentNumber = ? AND pc.CourseId = ?`,
+					[StudentNumber, CourseId]
+				);
+			} else if (StudentNumber) {
+				// If only StudentNumber is provided, retrieve items based on StudentNumber
+				[checklistResult] = await connection.query(
+					`SELECT pc.*, c.* 
+					FROM StudentCourseList pc
+					JOIN Course c ON pc.CourseId = c.CourseId
+					WHERE pc.StudentNumber = ?`,
+					[StudentNumber]
+				);
+			} else if (CourseId) {
+				// If only CourseId is provided, retrieve items based on CourseId
+				[checklistResult] = await connection.query(
+					`SELECT pc.*, c.* 
+					FROM StudentCourseList pc
+					JOIN Course c ON pc.CourseId = c.CourseId
+					WHERE pc.CourseId = ?`,
+					[CourseId]
+				);
+			}
+		} else {
+			// If neither StudentNumber nor CourseId is provided, retrieve all checklist items with course details
+			[checklistResult] = await connection.query(
+				`SELECT pc.*, c.* 
+				FROM StudentCourseList pc
+				JOIN Course c ON pc.CourseId = c.CourseId`
+			);
+		}
+
+		// Initialize an empty array to store the processed checklist items
+		const studentCourseListItems = [];
+
+		// Loop through each item in the checklistResult array
+		for (const item of checklistResult) {
+			// Asynchronously retrieve course details using the CourseId from the current item
+			const { courses } = await getCourse(item.CourseId);
+
+			// Asynchronously retrieve student details using the StudentNumber from the current item
+			const { students } = await getStudent(item.StudentNumber);
+
+			// Push an object containing the relevant data for the checklist item into the studentCourseListItems array
+			studentCourseListItems.push({
+				Course: courses[0],
+				Student: students[0],
+				CourseStatus: item.CourseStatus,
+				Grade: item.Grade,
+				StandingTaken: item.StandingTaken,
+				AcademicYear: item.AcademicYear,
+				Semester: item.Semester,
+				DateSubmitted: item.DateSubmitted,
+				TimeSubmitted: item.TimeSubmitted,
+			});
+		}
+
+		// Commit transaction if everything is successful
+		await connection.commit();
+
+		// Return the list of checklist items along with the full Course and Student objects
+		return { success: true, studentCourseListItems };
+	} catch (error) {
+		// Rollback transaction in case of any errors
 		await connection.rollback();
 		// Return the error wrapped in an object with error details
 		return { success: false, error: error.message };
