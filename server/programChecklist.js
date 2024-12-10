@@ -112,3 +112,49 @@ export async function getChecklistItems(studentProgram = null) {
 		connection.release();
 	}
 }
+
+// Function to delete a checklist item by its StudentProgram and CourseId
+export async function deleteChecklistItem(studentProgram, courseId) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Check if the checklist item exists in the database
+		const [checklistResult] = await connection.query(`SELECT * FROM ProgramChecklist WHERE StudentProgram = ? AND CourseID = ?`, [
+			studentProgram,
+			courseId,
+		]);
+
+		// If no matching checklist item is found, throw an error
+		if (checklistResult.length === 0) {
+			throw new Error(`Checklist item not found for StudentProgram: ${studentProgram}, CourseID: ${courseId}`);
+		}
+
+		// Delete the checklist item from the 'ProgramChecklist' table
+		const [result] = await connection.query(`DELETE FROM ProgramChecklist WHERE StudentProgram = ? AND CourseID = ?`, [studentProgram, courseId]);
+
+		// Commit the transaction if the delete operation is successful
+		await connection.commit();
+
+		// Return a success message after deletion
+		return {
+			success: true,
+			message: `Checklist item with StudentProgram: '${studentProgram}' and CourseID: '${courseId}' successfully deleted.`,
+		};
+	} catch (error) {
+		// Roll back the transaction to maintain data consistency in case of an error
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return {
+			success: false,
+			error: error.message,
+		};
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
