@@ -109,3 +109,51 @@ export async function deleteAdviser(adviserID) {
 		connection.release();
 	}
 }
+
+export async function editAdviser(currentAdviserID, updatedAdviserData) {
+	// Destructure the updated adviser data object to extract necessary information
+	const { AdviserID: newAdviserID, A_FirstName, A_MiddleName, A_LastName, AdvisingProgram } = updatedAdviserData;
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Function to check if an adviser exists in the Adviser table
+		const checkIfAdviserExists = async (adviserId) => {
+			const [rows] = await connection.query(`SELECT COUNT(*) as count FROM Adviser WHERE AdviserID = ?`, [adviserId]);
+			return rows[0].count > 0;
+		};
+
+		// Step 0: Check if the current adviser exists
+		const adviserExists = await checkIfAdviserExists(currentAdviserID);
+		if (!adviserExists) {
+			throw new Error(`Adviser with ID ${currentAdviserID} does not exist.`);
+		}
+
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Update the adviser details in the 'Adviser' table using the current AdviserID
+		const [updateResult] = await connection.query(
+			`UPDATE Adviser
+			 SET AdviserID = ?, A_FirstName = ?, A_MiddleName = ?, A_LastName = ?, AdvisingProgram = ?
+			 WHERE AdviserID = ?`,
+			[newAdviserID, A_FirstName, A_MiddleName, A_LastName, AdvisingProgram, currentAdviserID]
+		);
+
+		// Commit the transaction if the update operation is successful
+		await connection.commit();
+
+		// Return the result of the adviser update
+		return { success: true, updateResult };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
