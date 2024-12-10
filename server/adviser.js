@@ -73,3 +73,39 @@ export async function getAdviser(adviserID = null) {
 		connection.release();
 	}
 }
+
+export async function deleteAdviser(adviserID) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Check if the adviser exists in the Adviser table
+		const [adviserResult] = await connection.query(`SELECT * FROM Adviser WHERE AdviserID = ?`, [adviserID]);
+
+		// If the adviser does not exist, throw an error
+		if (adviserResult.length === 0) {
+			throw new Error('Adviser not found.');
+		}
+
+		// Delete the adviser from the Adviser table
+		const [result] = await connection.query(`DELETE FROM Adviser WHERE AdviserID = ?`, [adviserID]);
+
+		// Commit the transaction if the delete operation is successful
+		await connection.commit();
+
+		// Return success response
+		return { success: true, message: `Adviser with ID ${adviserID} successfully deleted.` };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
