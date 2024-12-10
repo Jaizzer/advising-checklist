@@ -1,5 +1,5 @@
 import express from 'express';
-import { getCourse } from './course.js';
+import { getCourse, insertCourse } from './course.js';
 import cors from 'cors';
 
 // Initialize an Express application
@@ -7,6 +7,9 @@ const app = express();
 
 // Use CORS middleware to allow cross-origin requests from any origin
 app.use(cors());
+
+// Add middleware to parse JSON sent by the client
+app.use(express.json());
 
 // Set the port for the server to listen on
 const PORT = 9090;
@@ -28,6 +31,28 @@ app.get('/courses/:studentProgram', async (request, response) => {
 
 	// Return the courses as a JSON response
 	response.json(courses);
+});
+
+
+app.post('/courses', async (request, response) => {
+	// Access the course to be added to the database
+	const course = request.body;
+    
+	try {
+		await insertCourse(course);
+		// Respond with the received course data
+		response.status(201).json({
+			success: true,
+			message: 'Course successfully submitted!',
+			data: course, // Send the course data back as the response
+		});
+	} catch (error) {
+		// Handle any errors and respond with an error message
+		response.status(500).json({
+			success: false,
+			error: `Failed to submit course: ${error.message}`,
+		});
+	}
 });
 
 // Start the server and listen on the specified port
