@@ -65,23 +65,41 @@ export async function insertCourse(courseData) {
 	}
 }
 
-export async function getCourse(courseID = null) {
+export async function getCourse(courseID = null, studentProgram = null) {
+	// Ensure studentProgram is provided before proceeding
+	if (!studentProgram) {
+		return { success: false, error: 'Student program is required.' }; // Return early if no student program is provided
+	}
+
 	// Establish a connection to the database from the connection pool
 	const connection = await pool.getConnection();
 
 	try {
 		let courseResult;
 
-		// If a courseID is provided, query for that specific course
+		// If a courseID is provided, query for that specific course and join with ProgramChecklist
 		if (courseID) {
-			[courseResult] = await connection.query(`SELECT * FROM Course WHERE CourseID = ?`, [courseID]);
+			[courseResult] = await connection.query(
+				`SELECT Course.*, ProgramChecklist.CourseType 
+				FROM Course 
+				LEFT JOIN ProgramChecklist ON Course.CourseID = ProgramChecklist.CourseID 
+				WHERE Course.CourseID = ? AND ProgramChecklist.StudentProgram = ?`,
+				[courseID, studentProgram]
+			);
+
 			// If the course doesn't exist, return an error message
 			if (courseResult.length === 0) {
-				return { success: false, error: 'Course not found.' };
+				return { success: false, error: 'Course not found for the given student program.' };
 			}
 		} else {
-			// If no courseID is provided, retrieve all courses
-			[courseResult] = await connection.query(`SELECT * FROM Course`);
+			// If no courseID is provided, retrieve all courses for the student program
+			[courseResult] = await connection.query(
+				`SELECT Course.*, ProgramChecklist.CourseType 
+				FROM Course 
+				LEFT JOIN ProgramChecklist ON Course.CourseID = ProgramChecklist.CourseID 
+				WHERE ProgramChecklist.StudentProgram = ?`,
+				[studentProgram]
+			);
 		}
 
 		// Array to store all the courses
@@ -97,6 +115,7 @@ export async function getCourse(courseID = null) {
 				College: course.College,
 				Department: course.Department,
 				GradingBasis: course.GradingBasis,
+				CourseType: course.CourseType || 'Not Assigned', // Include CourseType here
 				Prerequisites: [],
 				Corequisites: [],
 			};
@@ -106,7 +125,7 @@ export async function getCourse(courseID = null) {
 
 			// For each prerequisite, fetch detailed course information by calling getCourse recursively
 			for (const prerequisiteRow of prerequisitesResult) {
-				const prerequisiteCourse = await getCourse(prerequisiteRow.Prerequisite);
+				const prerequisiteCourse = await getCourse(prerequisiteRow.Prerequisite, studentProgram);
 				if (prerequisiteCourse.success) {
 					courseData.Prerequisites.push(prerequisiteCourse.courses[0]); // Assuming the recursive call returns an array
 				}
@@ -117,7 +136,7 @@ export async function getCourse(courseID = null) {
 
 			// For each corequisite, fetch detailed course information by calling getCourse recursively
 			for (const corequisiteRow of corequisitesResult) {
-				const corequisiteCourse = await getCourse(corequisiteRow.Corequisite);
+				const corequisiteCourse = await getCourse(corequisiteRow.Corequisite, studentProgram);
 				if (corequisiteCourse.success) {
 					courseData.Corequisites.push(corequisiteCourse.courses[0]); // Assuming the recursive call returns an array
 				}
@@ -127,7 +146,7 @@ export async function getCourse(courseID = null) {
 			courses.push(courseData);
 		}
 
-		// Return the course data along with detailed prerequisites and corequisites
+		// Return the course data along with detailed prerequisites, corequisites, and CourseType
 		return { success: true, courses };
 	} catch (error) {
 		// Return the error wrapped in an object with error details
