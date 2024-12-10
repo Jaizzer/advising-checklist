@@ -16,7 +16,7 @@ const PORT = 9090;
 
 // Create courses route
 app.get('/courses/:studentProgram', async (request, response) => {
-    console.log("studentProgram")
+	console.log('studentProgram');
 
 	// Get the student program from the URL parameter and decode it in case it contains spaces
 	const studentProgram = decodeURIComponent(request.params.studentProgram);
@@ -33,11 +33,10 @@ app.get('/courses/:studentProgram', async (request, response) => {
 	response.json(courses);
 });
 
-
 app.post('/courses', async (request, response) => {
 	// Access the course to be added to the database
 	const course = request.body;
-    
+
 	try {
 		await insertCourse(course);
 		// Respond with the received course data
