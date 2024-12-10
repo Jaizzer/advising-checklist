@@ -162,3 +162,74 @@ export async function deleteStudent(studentNumber) {
 		connection.release();
 	}
 }
+
+export async function editStudent(currentStudentNumber, updatedStudentData) {
+	// Destructure the updated student data object to extract necessary information
+	const {
+		StudentNumber: newStudentNumber,
+		S_FirstName,
+		S_MiddleName,
+		S_LastName,
+		StudentProgram,
+		AdviserID,
+		CurrentStanding,
+		TotalUnitsTaken,
+	} = updatedStudentData;
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Check if the current student exists in the database first
+		const [studentExists] = await connection.query(`SELECT COUNT(*) AS count FROM Student WHERE StudentNumber = ?`, [currentStudentNumber]);
+		if (studentExists[0].count === 0) {
+			// Throw an error if the student does not exist
+			throw new Error(`Student with number ${currentStudentNumber} does not exist.`);
+		}
+
+		// If an AdviserID is provided, check if the adviser exists in the Adviser table
+		if (AdviserID) {
+			const [adviserCheck] = await connection.query(`SELECT COUNT(*) AS count FROM Adviser WHERE AdviserID = ?`, [AdviserID]);
+			if (adviserCheck[0].count === 0) {
+				// Throw an error if the adviser does not exist
+				throw new Error(`Adviser with ID ${AdviserID} does not exist.`);
+			}
+		}
+
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Update the student information in the 'Student' table
+		const [updateResult] = await connection.query(
+			`UPDATE Student
+			 SET StudentNumber = ?, S_FirstName = ?, S_MiddleName = ?, S_LastName = ?, StudentProgram = ?, AdviserID = ?, CurrentStanding = ?, TotalUnitsTaken = ?
+			 WHERE StudentNumber = ?`,
+			[
+				newStudentNumber,
+				S_FirstName,
+				S_MiddleName,
+				S_LastName,
+				StudentProgram,
+				AdviserID,
+				CurrentStanding,
+				TotalUnitsTaken,
+				currentStudentNumber,
+			]
+		);
+
+		// Commit the transaction if the update operation is successful
+		await connection.commit();
+
+		// Return the result of the student update
+		return { success: true, updateResult };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
