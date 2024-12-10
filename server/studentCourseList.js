@@ -145,3 +145,54 @@ export async function getStudentCourseListItem(StudentNumber = null, CourseId = 
 		connection.release();
 	}
 }
+
+// Function to delete a studentCourseListItem based on StudentNumber and CourseId
+export async function deleteStudentCourseListItem(StudentNumber, CourseId) {
+	// Check if both StudentNumber and CourseId are provided
+	if (!StudentNumber || !CourseId) {
+		return { success: false, error: 'Both StudentNumber and CourseId must be provided.' };
+	}
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Begin transaction
+		await connection.beginTransaction();
+
+		// Check if the studentCourseListItem for the given student and course exists
+		const [existingStudentCourseListItem] = await connection.query(
+			`SELECT COUNT(*) AS count 
+			FROM StudentCourseList 
+			WHERE StudentNumber = ? AND CourseId = ?`,
+			[StudentNumber, CourseId]
+		);
+
+		// If no such row exists, return an error message
+		if (existingStudentCourseListItem[0].count === 0) {
+			return { success: false, error: `No studentCourseListItem found for StudentNumber ${StudentNumber} and CourseId ${CourseId}.` };
+		}
+
+		// Delete the studentCourseListItem for the provided StudentNumber and CourseId
+		await connection.query(
+			`DELETE FROM StudentCourseList 
+			WHERE StudentNumber = ? AND CourseId = ?`,
+			[StudentNumber, CourseId]
+		);
+
+		// Commit the transaction
+		await connection.commit();
+
+		// Return success message
+		return { success: true, message: `studentCourseListItem for StudentNumber ${StudentNumber} and CourseId ${CourseId} has been deleted.` };
+	} catch (error) {
+		// Rollback transaction in case of any errors
+		await connection.rollback();
+
+		// Return error message
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
