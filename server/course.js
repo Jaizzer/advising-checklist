@@ -123,30 +123,24 @@ export async function getCourse(courseID = null, studentProgram = null) {
 			// Query the 'CoursePrerequisite' table to get the prerequisites for each course
 			const [prerequisitesResult] = await connection.query(`SELECT Prerequisite FROM CoursePrerequisite WHERE CourseID = ?`, [course.CourseID]);
 
-			// For each prerequisite, fetch detailed course information by calling getCourse recursively
+			// Instead of recursively fetching course data, just store course IDs as strings
 			for (const prerequisiteRow of prerequisitesResult) {
-				const prerequisiteCourse = await getCourse(prerequisiteRow.Prerequisite, studentProgram);
-				if (prerequisiteCourse.success) {
-					courseData.Prerequisites.push(prerequisiteCourse.courses[0]); // Assuming the recursive call returns an array
-				}
+				courseData.Prerequisites.push(prerequisiteRow.Prerequisite); // Push the prerequisite course ID
 			}
 
 			// Query the 'CourseCorequisite' table to get the corequisites for each course
 			const [corequisitesResult] = await connection.query(`SELECT Corequisite FROM CourseCorequisite WHERE CourseID = ?`, [course.CourseID]);
 
-			// For each corequisite, fetch detailed course information by calling getCourse recursively
+			// Instead of recursively fetching course data, just store course IDs as strings
 			for (const corequisiteRow of corequisitesResult) {
-				const corequisiteCourse = await getCourse(corequisiteRow.Corequisite, studentProgram);
-				if (corequisiteCourse.success) {
-					courseData.Corequisites.push(corequisiteCourse.courses[0]); // Assuming the recursive call returns an array
-				}
+				courseData.Corequisites.push(corequisiteRow.Corequisite); // Push the corequisite course ID
 			}
 
 			// Add the course data to the courses array
 			courses.push(courseData);
 		}
 
-		// Return the course data along with detailed prerequisites, corequisites, and CourseType
+		// Return the course data along with CourseType, prerequisites, and corequisites as arrays of strings
 		return { success: true, courses };
 	} catch (error) {
 		// Return the error wrapped in an object with error details
