@@ -4,7 +4,7 @@ import { getCourse } from './course.js';
 // Function to insert a new checklist item into the ProgramChecklist
 export async function insertChecklistItem(checklistData) {
 	// Destructure the checklist data object to extract necessary information
-	const { StudentProgram, CourseID, CourseType, PrescribedYear, PrescribedSemester } = checklistData;
+	const { StudentProgram, CourseId, CourseType, PrescribedYear, PrescribedSemester } = checklistData;
 
 	// Establish a connection to the database from the connection pool
 	const connection = await pool.getConnection();
@@ -13,21 +13,21 @@ export async function insertChecklistItem(checklistData) {
 		// Start a transaction to ensure atomicity of the operations
 		await connection.beginTransaction();
 
-		// Check if the CourseID exists in the Course table
-		const [courseExists] = await connection.query(`SELECT COUNT(*) AS count FROM Course WHERE CourseID = ?`, [CourseID]);
+		// Check if the CourseId exists in the Course table
+		const [courseExists] = await connection.query(`SELECT COUNT(*) AS count FROM Course WHERE CourseId = ?`, [CourseId]);
 
 		if (courseExists[0].count === 0) {
-			// Rollback the transaction if the CourseID does not exist in the Course table
+			// Rollback the transaction if the CourseId does not exist in the Course table
 			await connection.rollback();
-			// Return an error indicating that the CourseID does not exist
-			return { success: false, error: `CourseID ${CourseID} does not exist in the Course table.` };
+			// Return an error indicating that the CourseId does not exist
+			return { success: false, error: `CourseId ${CourseId} does not exist in the Course table.` };
 		}
 
 		// Insert the new checklist item into the 'ProgramChecklist' table, using CURRENT_DATE and CURRENT_TIME for dynamic values
 		const [result] = await connection.query(
-			`INSERT INTO ProgramChecklist (StudentProgram, CourseID, CourseType, PrescribedYear, PrescribedSemester, DateLastUpdated, TimeLastUpdated)
+			`INSERT INTO ProgramChecklist (StudentProgram, CourseId, CourseType, PrescribedYear, PrescribedSemester, DateLastUpdated, TimeLastUpdated)
 			 VALUES (?, ?, ?, ?, ?, CURRENT_DATE, CURRENT_TIME)`,
-			[StudentProgram, CourseID, CourseType, PrescribedYear, PrescribedSemester]
+			[StudentProgram, CourseId, CourseType, PrescribedYear, PrescribedSemester]
 		);
 
 		// Commit the transaction if the insert operation is successful
@@ -59,11 +59,11 @@ export async function getChecklistItems(studentProgram = null) {
 
 		// If a specific StudentProgram is provided, retrieve items for that program
 		if (studentProgram) {
-			// Retrieve checklist items and join with the Course table based on CourseID
+			// Retrieve checklist items and join with the Course table based on CourseId
 			[checklistResult] = await connection.query(
 				`SELECT pc.*, c.* 
 				FROM ProgramChecklist pc
-				JOIN Course c ON pc.CourseID = c.CourseID
+				JOIN Course c ON pc.CourseId = c.CourseId
 				WHERE pc.StudentProgram = ?`,
 				[studentProgram]
 			);
@@ -72,7 +72,7 @@ export async function getChecklistItems(studentProgram = null) {
 			[checklistResult] = await connection.query(
 				`SELECT pc.*, c.* 
 				FROM ProgramChecklist pc
-				JOIN Course c ON pc.CourseID = c.CourseID`
+				JOIN Course c ON pc.CourseId = c.CourseId`
 			);
 		}
 
@@ -81,13 +81,13 @@ export async function getChecklistItems(studentProgram = null) {
 
 		// Loop through each item in the checklistResult array
 		for (const item of checklistResult) {
-			// Asynchronously retrieve course details using the CourseID from the current item
-			const { courses } = await getCourse(item.CourseID);
+			// Asynchronously retrieve course details using the CourseId from the current item
+			const { courses } = await getCourse(item.CourseId);
 
 			// Push an object containing the relevant data for the checklist item into the checklistItems array
 			checklistItems.push({
 				StudentProgram: item.StudentProgram,
-				CourseID: item.CourseID,
+				CourseId: item.CourseId,
 				CourseType: item.CourseType,
 				PrescribedYear: item.PrescribedYear,
 				PrescribedSemester: item.PrescribedSemester,
