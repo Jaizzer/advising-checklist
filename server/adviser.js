@@ -34,3 +34,42 @@ export async function insertAdviser(adviserData) {
 		connection.release();
 	}
 }
+
+export async function getAdviser(adviserID = null) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		let adviserResult;
+
+		// If an adviserID is provided, query for that specific adviser
+		if (adviserID) {
+			[adviserResult] = await connection.query(`SELECT * FROM Adviser WHERE AdviserID = ?`, [adviserID]);
+			// If the adviser doesn't exist, return an error message
+			if (adviserResult.length === 0) {
+				return { success: false, error: 'Adviser not found.' };
+			}
+		} else {
+			// If no adviserID is provided, retrieve all advisers
+			[adviserResult] = await connection.query(`SELECT * FROM Adviser`);
+		}
+
+		// Array to store all the advisers
+		const advisers = adviserResult.map((adviser) => ({
+			AdviserID: adviser.AdviserID,
+			A_FirstName: adviser.A_FirstName,
+			A_MiddleName: adviser.A_MiddleName,
+			A_LastName: adviser.A_LastName,
+			AdvisingProgram: adviser.AdvisingProgram,
+		}));
+
+		// Return the adviser data
+		return { success: true, advisers };
+	} catch (error) {
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
