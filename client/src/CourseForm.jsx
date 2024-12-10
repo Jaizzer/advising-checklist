@@ -23,18 +23,6 @@ export default function CoourseForm() {
 		}));
 	};
 
-	// Handle adding a prerequisite or corequisite
-	const handleArrayChange = (e, type) => {
-		const { value } = e.target;
-		setCourseData((prevData) => {
-			const newArray = [...prevData[type], value];
-			return {
-				...prevData,
-				[type]: newArray,
-			};
-		});
-	};
-
 	// Handle form submission and send data to the server
 	const handleSubmit = async (e) => {
 		e.preventDefault();
