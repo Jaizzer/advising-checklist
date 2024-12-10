@@ -173,3 +173,103 @@ export async function deleteCourse(courseID) {
 		connection.release();
 	}
 }
+
+export async function editCourse(currentCourseID, updatedCourseData) {
+	// Destructure the updated course data object to extract necessary information
+	const {
+		CourseID: newCourseID,
+		CourseDescription,
+		Units,
+		CourseComponents,
+		College,
+		Department,
+		GradingBasis,
+		Prerequisites,
+		Corequisites,
+	} = updatedCourseData;
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Function to check if a course exists in the Course table
+		const checkIfCourseExists = async (courseId) => {
+			const [rows] = await connection.query(`SELECT COUNT(*) as count FROM Course WHERE CourseID = ?`, [courseId]);
+			return rows[0].count > 0;
+		};
+
+		// Step 0: Check if the current course exists
+		const courseExists = await checkIfCourseExists(currentCourseID);
+		if (!courseExists) {
+			throw new Error(`Course with ID ${currentCourseID} does not exist.`);
+		}
+
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Update the course details in the 'Course' table using the current CourseID
+		const [updateResult] = await connection.query(
+			`UPDATE Course
+			 SET CourseID = ?, CourseDescription = ?, Units = ?, CourseComponents = ?, College = ?, Department = ?, GradingBasis = ?
+			 WHERE CourseID = ?`,
+			[newCourseID, CourseDescription, Units, CourseComponents, College, Department, GradingBasis, currentCourseID]
+		);
+
+		// Delete old prerequisites for the course from 'CoursePrerequisite' table using currentCourseID
+		await connection.query(`DELETE FROM CoursePrerequisite WHERE CourseID = ?`, [currentCourseID]);
+
+		// Delete old corequisites for the course from 'CourseCorequisite' table using currentCourseID
+		await connection.query(`DELETE FROM CourseCorequisite WHERE CourseID = ?`, [currentCourseID]);
+
+		// Insert new prerequisites for the course into the 'CoursePrerequisite' table
+		// Iterate over the prerequisites array and insert each one if it exists in the 'Course' table
+		for (let prerequisite of Prerequisites) {
+			// Ensure the course is not being added as its own prerequisite (currentCourseID check only)
+			if (prerequisite === currentCourseID) {
+				throw new Error(`Course cannot be its own prerequisite.`);
+			}
+
+			// Check if the prerequisite course exists
+			const exists = await checkIfCourseExists(prerequisite);
+			if (exists) {
+				await connection.query(`INSERT INTO CoursePrerequisite (CourseID, Prerequisite) VALUES (?, ?)`, [newCourseID, prerequisite]);
+			} else {
+				// Throw error if prerequisite does not exist in the Course table
+				throw new Error(`Prerequisite course ${prerequisite} does not exist.`);
+			}
+		}
+
+		// Insert new corequisites for the course into the 'CourseCorequisite' table
+		// Iterate over the corequisites array and insert each one if it exists in the 'Course' table
+		for (let corequisite of Corequisites) {
+			// Ensure the course is not being added as its own corequisite (currentCourseID check only)
+			if (corequisite === currentCourseID) {
+				throw new Error(`Course cannot be its own corequisite.`);
+			}
+
+			// Check if the corequisite course exists
+			const exists = await checkIfCourseExists(corequisite);
+			if (exists) {
+				await connection.query(`INSERT INTO CourseCorequisite (CourseID, Corequisite) VALUES (?, ?)`, [newCourseID, corequisite]);
+			} else {
+				// Throw error if corequisite does not exist in the Course table
+				throw new Error(`Corequisite course ${corequisite} does not exist.`);
+			}
+		}
+
+		// Commit the transaction after all operations (update, delete, insert) are successful
+		await connection.commit();
+
+		// Return the result of the course update
+		return { success: true, message: `Course with ID ${currentCourseID} successfully updated.` };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
