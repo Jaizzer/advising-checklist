@@ -196,3 +196,71 @@ export async function deleteStudentCourseListItem(StudentNumber, CourseId) {
 		connection.release();
 	}
 }
+
+// Function to update the details of a StudentCourseList item
+export async function updateStudentCourseList(studentNumber, courseId, updatedData) {
+	// Destructure the updated data object to extract necessary information
+	const { CourseStatus, Grade, StandingTaken, AcademicYear, Semester } = updatedData;
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Check if the CourseId exists in the Course table
+		const [courseExists] = await connection.query(`SELECT COUNT(*) AS count FROM Course WHERE CourseId = ?`, [courseId]);
+
+		if (courseExists[0].count === 0) {
+			// Rollback the transaction if the CourseId does not exist in the Course table
+			await connection.rollback();
+			// Return an error indicating that the CourseId does not exist
+			return { success: false, error: `CourseId ${courseId} does not exist in the Course table.` };
+		}
+
+		// Check if the StudentNumber exists in the Student table
+		const [studentExists] = await connection.query(`SELECT COUNT(*) AS count FROM Student WHERE StudentNumber = ?`, [studentNumber]);
+
+		if (studentExists[0].count === 0) {
+			// Rollback the transaction if the StudentNumber does not exist in the Student table
+			await connection.rollback();
+			// Return an error indicating that the StudentNumber does not exist
+			return { success: false, error: `StudentNumber ${studentNumber} does not exist in the Student table.` };
+		}
+
+		// Check if the StudentCourseList item exists for the given StudentNumber and CourseId
+		const [itemExists] = await connection.query(`SELECT COUNT(*) AS count FROM StudentCourseList WHERE StudentNumber = ? AND CourseId = ?`, [
+			studentNumber,
+			courseId,
+		]);
+
+		if (itemExists[0].count === 0) {
+			// Throw an error if the StudentCourseList item does not exist
+			throw new Error(`StudentCourseList item for StudentNumber ${studentNumber} and CourseId ${courseId} does not exist.`);
+		}
+
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Update the StudentCourseList item information in the 'StudentCourseList' table
+		const [updateResult] = await connection.query(
+			`UPDATE StudentCourseList
+			 SET CourseStatus = ?, Grade = ?, StandingTaken = ?, AcademicYear = ?, Semester = ?, DateSubmitted = CURRENT_DATE, TimeSubmitted = CURRENT_TIME
+			 WHERE StudentNumber = ? AND CourseId = ?`,
+			[CourseStatus, Grade, StandingTaken, AcademicYear, Semester, studentNumber, courseId]
+		);
+
+		// Commit the transaction if the update operation is successful
+		await connection.commit();
+
+		// Return the result of the StudentCourseList update
+		return { success: true, updateResult };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
