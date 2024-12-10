@@ -62,14 +62,15 @@ CREATE TABLE `Student` (
 
 CREATE TABLE `StudentCourseList` (
   `StudentNumber` VARCHAR(200) NOT NULL,
-  `CourseId` VARCHAR(200) DEFAULT NULL,
-  `CourseStatus` text,
-  `Grade` float DEFAULT NULL,
+  `CourseId` VARCHAR(200) NOT NULL,
+  `CourseStatus` TEXT,
+  `Grade` FLOAT DEFAULT NULL,
   `StandingTaken` VARCHAR(200) DEFAULT NULL,
   `AcademicYear` VARCHAR(200) DEFAULT NULL,
   `Semester` VARCHAR(200) DEFAULT NULL,
-  `DateSubmitted` date DEFAULT NULL,
-  `TimeSubmitted` time DEFAULT NULL,
+  `DateSubmitted` DATE DEFAULT NULL,
+  `TimeSubmitted` TIME DEFAULT NULL,
+  PRIMARY KEY (`StudentNumber`, `CourseId`), 
   FOREIGN KEY (`StudentNumber`) REFERENCES `Student`(`StudentNumber`) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
