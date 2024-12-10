@@ -1,4 +1,5 @@
 import pool from './database.js';
+import { getCourse } from './course.js';
 
 // Function to insert a new checklist item into the ProgramChecklist
 export async function insertChecklistItem(checklistData) {
@@ -36,6 +37,73 @@ export async function insertChecklistItem(checklistData) {
 		return { success: true, result };
 	} catch (error) {
 		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
+
+// Function to retrieve checklist items, optionally filtering by StudentProgram
+export async function getChecklistItems(studentProgram = null) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Begin transaction
+		await connection.beginTransaction();
+
+		let checklistResult;
+
+		// If a specific StudentProgram is provided, retrieve items for that program
+		if (studentProgram) {
+			// Retrieve checklist items and join with the Course table based on CourseID
+			[checklistResult] = await connection.query(
+				`SELECT pc.*, c.* 
+				FROM ProgramChecklist pc
+				JOIN Course c ON pc.CourseID = c.CourseID
+				WHERE pc.StudentProgram = ?`,
+				[studentProgram]
+			);
+		} else {
+			// If no StudentProgram is provided, retrieve all checklist items with course details
+			[checklistResult] = await connection.query(
+				`SELECT pc.*, c.* 
+				FROM ProgramChecklist pc
+				JOIN Course c ON pc.CourseID = c.CourseID`
+			);
+		}
+
+		// Initialize an empty array to store the processed checklist items
+		const checklistItems = [];
+
+		// Loop through each item in the checklistResult array
+		for (const item of checklistResult) {
+			// Asynchronously retrieve course details using the CourseID from the current item
+			const { courses } = await getCourse(item.CourseID);
+
+			// Push an object containing the relevant data for the checklist item into the checklistItems array
+			checklistItems.push({
+				StudentProgram: item.StudentProgram,
+				CourseID: item.CourseID,
+				CourseType: item.CourseType,
+				PrescribedYear: item.PrescribedYear,
+				PrescribedSemester: item.PrescribedSemester,
+				DateLastUpdated: item.DateLastUpdated,
+				TimeLastUpdated: item.TimeLastUpdated,
+				Course: courses[0],
+			});
+		}
+
+		// Commit transaction if everything is successful
+		await connection.commit();
+
+		// Return the list of checklist items along with the full Course object
+		return { success: true, checklistItems };
+	} catch (error) {
+		// Rollback transaction in case of any errors
 		await connection.rollback();
 		// Return the error wrapped in an object with error details
 		return { success: false, error: error.message };
