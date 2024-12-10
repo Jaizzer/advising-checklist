@@ -137,3 +137,39 @@ export async function getCourse(courseID = null) {
 		connection.release();
 	}
 }
+
+export async function deleteCourse(courseID) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Check if the course exists in the Course table
+		const [courseResult] = await connection.query(`SELECT * FROM Course WHERE CourseID = ?`, [courseID]);
+
+		// If the course does not exist, throw an error
+		if (courseResult.length === 0) {
+			throw new Error('Course not found.');
+		}
+
+		// Delete the course from the Course table
+		const [result] = await connection.query(`DELETE FROM Course WHERE CourseID = ?`, [courseID]);
+
+		// Commit the transaction if the delete operation is successful
+		await connection.commit();
+
+		// Return success response
+		return { success: true, message: `Course with ID ${courseID} successfully deleted.` };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
