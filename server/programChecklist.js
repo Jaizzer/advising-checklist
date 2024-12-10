@@ -158,3 +158,75 @@ export async function deleteChecklistItem(studentProgram, courseId) {
 		connection.release();
 	}
 }
+
+// Function to update the status or details of a checklist item
+export async function updateChecklistItem(studentProgram, courseID, updatedData) {
+	// Destructure the updated data object to extract necessary information
+	const { NewStudentProgram, CourseType, PrescribedYear, PrescribedSemester } = updatedData;
+
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Check if the CourseID exists in the Course table
+		const [courseExists] = await connection.query(`SELECT COUNT(*) AS count FROM Course WHERE CourseID = ?`, [courseID]);
+
+		if (courseExists[0].count === 0) {
+			// Rollback the transaction if the CourseID does not exist in the Course table
+			await connection.rollback();
+			// Return an error indicating that the CourseID does not exist
+			return { success: false, error: `CourseID ${courseID} does not exist in the Course table.` };
+		}
+
+		// If StudentProgram is being updated, check if the new StudentProgram + CourseID combination already exists
+		if (NewStudentProgram) {
+			const [newProgramExists] = await connection.query(
+				`SELECT COUNT(*) AS count FROM ProgramChecklist WHERE StudentProgram = ? AND CourseID = ?`,
+				[NewStudentProgram, courseID]
+			);
+
+			if (newProgramExists[0].count > 0) {
+				// If the new combination exists, return an error
+				throw new Error(`A checklist item for StudentProgram ${NewStudentProgram} and CourseID ${courseID} already exists.`);
+			}
+		}
+
+		// Check if the checklist item exists in the database for the original StudentProgram and CourseID
+		const [itemExists] = await connection.query(`SELECT COUNT(*) AS count FROM ProgramChecklist WHERE StudentProgram = ? AND CourseID = ?`, [
+			studentProgram,
+			courseID,
+		]);
+
+		if (itemExists[0].count === 0) {
+			// Throw an error if the checklist item does not exist
+			throw new Error(`Checklist item for StudentProgram ${studentProgram} and CourseID ${courseID} does not exist.`);
+		}
+
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Update the checklist item information in the 'ProgramChecklist' table
+		// If the StudentProgram is being updated, update it as well
+		const [updateResult] = await connection.query(
+			`UPDATE ProgramChecklist
+                SET StudentProgram = ?, CourseType = ?, PrescribedYear = ?, PrescribedSemester = ?, DateLastUpdated = CURRENT_DATE, TimeLastUpdated = CURRENT_TIME
+                WHERE StudentProgram = ? AND CourseID = ?`,
+			[NewStudentProgram || studentProgram, CourseType, PrescribedYear, PrescribedSemester, studentProgram, courseID]
+		);
+
+		// Commit the transaction if the update operation is successful
+		await connection.commit();
+
+		// Return the result of the checklist item update
+		return { success: true, updateResult };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
