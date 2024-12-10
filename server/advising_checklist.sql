@@ -37,13 +37,14 @@ CREATE TABLE `CoursePrerequisite` (
 
 CREATE TABLE `ProgramChecklist` (
   `StudentProgram` VARCHAR(200) NOT NULL,
-  `CourseID` VARCHAR(200) DEFAULT NULL,
+  `CourseId` VARCHAR(200) NOT NULL, 
   `CourseType` TEXT,
   `PrescribedYear` VARCHAR(200) DEFAULT NULL,
   `PrescribedSemester` VARCHAR(200) DEFAULT NULL,
   `DateLastUpdated` DATE NOT NULL,
   `TimeLastUpdated` TIME NOT NULL,
-  FOREIGN KEY (`CourseID`) REFERENCES `Course`(`CourseID`) ON DELETE CASCADE ON UPDATE CASCADE
+  PRIMARY KEY (`StudentProgram`, `CourseID`), 
+  FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `Student` (
