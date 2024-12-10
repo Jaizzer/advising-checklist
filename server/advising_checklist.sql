@@ -21,18 +21,16 @@ CREATE TABLE `Course` (
   PRIMARY KEY (`CourseId`)
 );
 
-CREATE TABLE `CourseCorequisite` (
-    `CourseId` VARCHAR(200) NOT NULL,
-    `Corequisite` VARCHAR(200) NOT NULL,
-    FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (`Corequisite`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
-)
-
 CREATE TABLE `CoursePrerequisite` (
   `CourseId` VARCHAR(200) NOT NULL,
   `Prerequisite` VARCHAR(200) DEFAULT NULL,
-  FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  FOREIGN KEY (`Prerequisite`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
+  FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE `CourseCorequisite` (
+  `CourseId` VARCHAR(200) NOT NULL,
+  `Corequisite` VARCHAR(200) NOT NULL,
+  FOREIGN KEY (`CourseId`) REFERENCES `Course`(`CourseId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE `ProgramChecklist` (
