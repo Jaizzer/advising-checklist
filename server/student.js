@@ -127,3 +127,38 @@ export async function getStudent(studentNumber = null) {
 		connection.release();
 	}
 }
+
+export async function deleteStudent(studentNumber) {
+	// Establish a connection to the database from the connection pool
+	const connection = await pool.getConnection();
+
+	try {
+		// Start a transaction to ensure atomicity of the operations
+		await connection.beginTransaction();
+
+		// Check if the student exists in the database
+		const [studentResult] = await connection.query(`SELECT * FROM Student WHERE StudentNumber = ?`, [studentNumber]);
+		if (studentResult.length === 0) {
+			// Throw an error if the student does not exist
+			throw new Error('Student not found.');
+		}
+
+		// Delete the student from the 'Student' table
+		const [result] = await connection.query(`DELETE FROM Student WHERE StudentNumber = ?`, [studentNumber]);
+
+		// Commit the transaction if the delete operation is successful
+		await connection.commit();
+
+		// Return a success message after deletion
+		return { success: true, message: `Student with number ${studentNumber} successfully deleted.` };
+	} catch (error) {
+		// If any error occurs, roll back the transaction to maintain data consistency
+		await connection.rollback();
+
+		// Return the error wrapped in an object with error details
+		return { success: false, error: error.message };
+	} finally {
+		// Release the connection back to the pool after all operations are complete
+		connection.release();
+	}
+}
