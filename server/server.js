@@ -1,5 +1,6 @@
 import express from 'express';
 import { getCourse, insertCourse } from './course.js';
+import { insertAdviser } from './adviser.js';
 import cors from 'cors';
 
 // Initialize an Express application
@@ -16,8 +17,6 @@ const PORT = 9090;
 
 // Create courses route
 app.get('/courses/:studentProgram', async (request, response) => {
-	console.log('studentProgram');
-
 	// Get the student program from the URL parameter and decode it in case it contains spaces
 	const studentProgram = decodeURIComponent(request.params.studentProgram);
 
@@ -50,6 +49,33 @@ app.post('/courses', async (request, response) => {
 		response.status(500).json({
 			success: false,
 			error: `Failed to submit course: ${error.message}`,
+		});
+	}
+});
+
+app.post('/advisers', async (req, res) => {
+	const adviserData = req.body;
+
+	try {
+		// Assume insertAdviser is a function to handle database insertion
+		const result = await insertAdviser(adviserData);
+
+		if (result.success) {
+			res.status(201).json({
+				success: true,
+				message: 'Adviser successfully submitted!',
+				data: adviserData,
+			});
+		} else {
+			res.status(500).json({
+				success: false,
+				error: 'Failed to insert adviser into the database.',
+			});
+		}
+	} catch (error) {
+		res.status(500).json({
+			success: false,
+			error: `Error occurred: ${error.message}`,
 		});
 	}
 });
