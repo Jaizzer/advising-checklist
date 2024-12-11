@@ -1,8 +1,8 @@
 import express from 'express';
+import cors from 'cors';
 import { getCourse, insertCourse } from './course.js';
 import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
-import cors from 'cors';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
 
