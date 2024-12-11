@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { getCourse, insertCourse } from './course.js';
+import { getCourse } from './course.js';
+import insertCourse from './insertCourse.js';
 import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
@@ -116,6 +117,40 @@ app.post('/students', async (req, res) => {
 		}
 	} catch (error) {
 		res.status(500).json({ error: `Server error: ${error.message}` });
+	}
+});
+
+// POST route for adding a course
+app.post('/addCourse', async (req, res) => {
+	try {
+		// Extract data from the request body
+		const { courseData } = req.body;
+
+		// Validate required fields
+		if (!courseData) {
+			return res.status(400).json({
+				success: false,
+				message: 'Missing required fields: courseData or studentProgram.',
+			});
+		}
+
+		// Call the insertCourse function
+		const result = await insertCourse(courseData);
+
+		// Send a success response
+		res.status(200).json({
+			success: true,
+			message: 'Course successfully added.',
+			data: result,
+		});
+	} catch (error) {
+		// Handle errors and send an error response
+		console.error('Error in /addCourse:', error.message);
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while adding the course.',
+			error: error.message,
+		});
 	}
 });
 
