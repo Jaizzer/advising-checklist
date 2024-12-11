@@ -39,7 +39,7 @@ export async function getStudentDashboardData(studentNumber) {
 
 		const student = studentResult[0];
 
-		// Get the list of courses that the student has taken, including grades
+		// Get the list of all courses that the student has taken, including grades
 		const [courseResult] = await connection.query(
 			`SELECT 
 				c.CourseId, 
@@ -52,8 +52,8 @@ export async function getStudentDashboardData(studentNumber) {
 			JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
 			JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = c.CourseId
 			WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-			AND (pc.PrescribedYear = (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?) OR pc.PrescribedYear IS NULL)`,
-			[studentNumber, studentNumber, studentNumber]
+			ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
+			[studentNumber, studentNumber]
 		);
 
 		if (courseResult.length === 0) {
@@ -72,18 +72,22 @@ export async function getStudentDashboardData(studentNumber) {
 			Grade: course.Grade || 'Not Available', // Grade is optional
 		}));
 
-		// Get the full course checklist based on the student's program and year
+		// Get the full course checklist based on the student's program and current standing
+		// Exclude courses with PrescribedYear = 'None' and PrescribedSemester = 'None'
 		const [courseChecklistResult] = await connection.query(
 			`SELECT 
-				c.CourseId, 
-				pc.CourseType, 
-				c.Units, 
-				pc.PrescribedYear, 
-				pc.PrescribedSemester
-			FROM Course c
-			JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
-			WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-			AND pc.PrescribedYear = (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)`,
+                c.CourseId, 
+                pc.CourseType, 
+                c.Units, 
+                pc.PrescribedYear, 
+                pc.PrescribedSemester
+            FROM Course c
+            JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
+            WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
+            AND pc.PrescribedYear <= (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)
+            AND pc.PrescribedYear != 'None'  -- Exclude courses with PrescribedYear = 'None'
+            AND pc.PrescribedSemester != 'None'  -- Exclude courses with PrescribedSemester = 'None'
+            ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
 			[studentNumber, studentNumber]
 		);
 
