@@ -3,6 +3,7 @@ import { getCourse, insertCourse } from './course.js';
 import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
 import cors from 'cors';
+import { getStudentDashboardData } from './getStudentDashboardData.js';
 
 // Initialize an Express application
 const app = express();
@@ -51,6 +52,15 @@ app.post('/courses', async (request, response) => {
 			success: false,
 			error: `Failed to submit course: ${error.message}`,
 		});
+	}
+});
+
+app.get('/dashboard/:studentNumber', async (request, response) => {
+	try {
+		const studentDashboardData = await getStudentDashboardData(request.params.studentNumber);
+		response.status(200).json(studentDashboardData);
+	} catch (error) {
+		response.status(500).send('Student not Found');
 	}
 });
 
