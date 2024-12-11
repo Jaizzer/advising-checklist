@@ -4,6 +4,7 @@ import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
 import cors from 'cors';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
+import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
 
 // Initialize an Express application
 const app = express();
@@ -61,6 +62,19 @@ app.get('/dashboard/:studentNumber', async (request, response) => {
 		response.status(200).json(studentDashboardData);
 	} catch (error) {
 		response.status(500).send('Student not Found');
+	}
+});
+
+app.get('/shopCourses/:studentNumber', async (req, res) => {
+	try {
+		// Get courses that are still not taken by the student
+		const courses = await getCoursesThatAreStillNotTaken(req.params.studentNumber);
+
+		// Return the courses in the response
+		res.status(200).json(courses);
+	} catch (error) {
+		// If an error occurs, return the error message with a 400 status code
+		res.status(400).send({ error: error.message });
 	}
 });
 
