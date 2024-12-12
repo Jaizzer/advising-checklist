@@ -29,7 +29,13 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
                 pc.CourseId, 
                 c.CourseDescription, 
                 pc.CourseType,
-                c.Units 
+                c.Units,
+                (SELECT GROUP_CONCAT(cp.Prerequisite) 
+                 FROM CoursePrerequisite cp 
+                 WHERE cp.CourseId = c.CourseId) AS Prerequisites,
+                (SELECT GROUP_CONCAT(cc.Corequisite) 
+                 FROM CourseCorequisite cc 
+                 WHERE cc.CourseId = c.CourseId) AS Corequisites
             FROM ProgramChecklist pc
             JOIN Course c ON pc.CourseId = c.CourseId
             LEFT JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = pc.CourseId
@@ -65,7 +71,9 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
 			CourseId: course.CourseId,
 			CourseDescription: course.CourseDescription,
 			CourseType: course.CourseType || 'Not Assigned',
-			Units: course.Units, // Add Units to coursesNotTaken
+			Units: course.Units, 
+			Prerequisites: course.Prerequisites ? course.Prerequisites.split(',') : [],
+			Corequisites: course.Corequisites ? course.Corequisites.split(',') : [],
 		}));
 
 		const coursesForAdvising = forAdvisingResult.map((course) => ({

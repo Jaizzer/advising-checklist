@@ -8,6 +8,8 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 	const [coursesToAdd, setCoursesToAdd] = useState([]);
 	const [coursesToDelete, setCoursesToDelete] = useState([]);
 
+	console.log(coursesNotTaken);
+
 	useEffect(() => {
 		const fetchCourses = async () => {
 			try {
@@ -76,7 +78,7 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 				const updatedCoursesToAdd = coursesToAdd.map((course) => ({ ...course, isSaved: true }));
 				setCoursesForAdvising([...coursesForAdvising.filter((course) => course.isSaved), ...updatedCoursesToAdd]);
 				setCoursesToAdd([]);
-				setCoursesToDelete([]); // Clear coursesToDelete after successful submission
+				setCoursesToDelete([]);
 			} else {
 				console.error('Error updating course list:', data.error);
 				setCoursesNotTaken([...coursesNotTaken, ...coursesToAdd]);
@@ -98,98 +100,101 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 	}
 
 	return (
-		<>
-			<div>hello</div>
-			<div className="row">
-				{/* Left Column: Checklist */}
-				<div className="col-7">
-					<div className="card shadow-sm card-checklist">
-						<div className="card-body">
-							<h1 className="mb-0">Student Course Checklist</h1>
-							<p>I - BS COMPUTER SCIENCE</p>
+		<div className="row">
+			{/* Left Column: Checklist */}
+			<div className="col-7">
+				<div className="card shadow-sm card-checklist">
+					<div className="card-body">
+						<h1 className="mb-0">Student Course Checklist</h1>
+						<p>I - BS COMPUTER SCIENCE</p>
 
-							{/* Dropdown Filter (Optional) */}
-							{/* ... (Dropdown filter code as in the original HTML) ... */}
-
-							<div className="checklist-table table-responsive mt-4">
-								<table className="table table-hover align-middle">
-									<thead>
-										<tr>
-											<th scope="col">Course</th>
-											<th scope="col">Course Type</th>
-											<th scope="col">Units</th>
-											<th scope="col">Actions</th>
+						<div className="checklist-table table-responsive mt-4">
+							<table className="table table-hover align-middle">
+								<thead>
+									<tr>
+										<th scope="col">Course</th>
+										<th scope="col">Course Type</th>
+										<th scope="col">Units</th>
+										<th scope="col">Prerequisites</th>
+										<th scope="col">Corequisites</th>
+										<th scope="col">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{coursesNotTaken.map((course) => (
+										<tr key={course.CourseId}>
+											<td>{course.CourseId}</td>
+											<td>{course.CourseType}</td>
+											<td>{course.Units}</td>
+											<td>
+												{Array.isArray(course.Prerequisites)
+													? course.Prerequisites.join(', ')
+													: course.Prerequisites || 'None'}
+											</td>
+											<td>
+												{Array.isArray(course.Corequisites) ? course.Corequisites.join(', ') : course.Corequisites || 'None'}
+											</td>
+											<td>
+												<button className="btn btn-sm btn-primary" onClick={() => handleAddCourse(course)}>
+													Add to Advising
+												</button>
+											</td>
 										</tr>
-									</thead>
-									<tbody>
-										{coursesNotTaken.map((course) => (
-											<tr key={course.CourseId}>
-												<td>{course.CourseId}</td>
-												<td>{course.CourseType}</td>
-												<td>{course.Units}</td>
-												<td>
-													<button className="btn btn-sm btn-primary" onClick={() => handleAddCourse(course)}>
-														Add to Advising
-													</button>
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-								<p className="text-end">TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{/* Right Column: Advising */}
-				<div className="col-5">
-					<div className="card shadow-sm card-list">
-						<div className="card-body">
-							<h1 className="mb-0">Course List for Advising</h1>
-							<p className="submission-label">Submitted: November 23, 2024</p>
-
-							<div className="checklist-table table-responsive mt-4">
-								<table className="table table-hover align-middle">
-									<thead>
-										<tr>
-											<th scope="col">Course</th>
-											<th scope="col">Course Type</th>
-											<th scope="col">Units</th>
-											<th scope="col">Actions</th>
-										</tr>
-									</thead>
-									<tbody>
-										{[...coursesForAdvising, ...coursesToAdd].map((course) => (
-											<tr key={course.CourseId}>
-												<td>{course.CourseId}</td>
-												<td>{course.CourseType}</td>
-												<td>{course.Units}</td>
-												<td>
-													<button className="btn btn-sm btn-danger" onClick={() => handleDeleteCourse(course)}>
-														Remove
-													</button>
-												</td>
-											</tr>
-										))}
-									</tbody>
-								</table>
-								<p className="text-end">
-									TOTAL UNITS: {[...coursesForAdvising, ...coursesToAdd].reduce((total, course) => total + (course.Units || 0), 0)}
-								</p>
-							</div>
-
-							<div className="advising-buttons d-flex gap-2 mt-4">
-								{(coursesToAdd.length > 0 || coursesToDelete.length > 0) && (
-									<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
-										Save Course List
-									</button>
-								)}
-							</div>
+									))}
+								</tbody>
+							</table>
+							<p className="text-end">TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}</p>
 						</div>
 					</div>
 				</div>
 			</div>
-		</>
+
+			{/* Right Column: Advising */}
+			<div className="col-5">
+				<div className="card shadow-sm card-list">
+					<div className="card-body">
+						<h1 className="mb-0">Course List for Advising</h1>
+
+						<div className="checklist-table table-responsive mt-4">
+							<table className="table table-hover align-middle">
+								<thead>
+									<tr>
+										<th scope="col">Course</th>
+										<th scope="col">Course Type</th>
+										<th scope="col">Units</th>
+										<th scope="col">Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{[...coursesForAdvising, ...coursesToAdd].map((course) => (
+										<tr key={course.CourseId}>
+											<td>{course.CourseId}</td>
+											<td>{course.CourseType}</td>
+											<td>{course.Units}</td>
+											<td>
+												<button className="btn btn-sm btn-danger" onClick={() => handleDeleteCourse(course)}>
+													Remove
+												</button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+							<p className="text-end">
+								TOTAL UNITS: {[...coursesForAdvising, ...coursesToAdd].reduce((total, course) => total + (course.Units || 0), 0)}
+							</p>
+						</div>
+
+						<div className="advising-buttons d-flex gap-2 mt-4">
+							{(coursesToAdd.length > 0 || coursesToDelete.length > 0) && (
+								<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
+									Save Course List
+								</button>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	);
 }
