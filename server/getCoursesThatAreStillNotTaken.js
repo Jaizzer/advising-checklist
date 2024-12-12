@@ -18,21 +18,22 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
 			throw new Error('Student not found.');
 		}
 
+		// Get the student's program
+		const [studentProgramResult] = await connection.query(`SELECT StudentProgram FROM Student WHERE StudentNumber = ?`, [studentNumber]);
+		const studentProgram = studentProgramResult[0].StudentProgram;
+
 		// Query to fetch courses that have not been taken by the student
 		const [notTakenResult] = await connection.query(
 			`SELECT 
                 pc.StudentProgram, 
                 pc.CourseId, 
                 c.CourseDescription, 
-                pc.CourseType
+                pc.CourseType,
+                c.Units 
             FROM ProgramChecklist pc
             JOIN Course c ON pc.CourseId = c.CourseId
             LEFT JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = pc.CourseId
-            WHERE pc.StudentProgram = (
-                SELECT StudentProgram 
-                FROM Student 
-                WHERE StudentNumber = ?
-            ) 
+            WHERE pc.StudentProgram = ? 
             AND scl.CourseId IS NULL
             AND pc.PrescribedYear <= (
                 SELECT CurrentStanding 
@@ -40,19 +41,22 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
                 WHERE StudentNumber = ?
             )
             ORDER BY pc.PrescribedYear, pc.PrescribedSemester;`,
-			[studentNumber, studentNumber, studentNumber]
+			[studentNumber, studentProgram, studentNumber]
 		);
 
 		// Query to fetch courses that are "For Advising"
 		const [forAdvisingResult] = await connection.query(
 			`SELECT 
                 scl.CourseId, 
-                c.CourseDescription 
+                c.CourseDescription, 
+                pc.CourseType, 
+                c.Units 
             FROM StudentCourseList scl
             JOIN Course c ON scl.CourseId = c.CourseId
+            JOIN ProgramChecklist pc ON scl.CourseId = pc.CourseId AND pc.StudentProgram = ? 
             WHERE scl.StudentNumber = ? 
               AND scl.CourseStatus = 'For Advising'`,
-			[studentNumber]
+			[studentProgram, studentNumber]
 		);
 
 		// Prepare the course data in the desired format
@@ -61,11 +65,14 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
 			CourseId: course.CourseId,
 			CourseDescription: course.CourseDescription,
 			CourseType: course.CourseType || 'Not Assigned',
+			Units: course.Units, // Add Units to coursesNotTaken
 		}));
 
 		const coursesForAdvising = forAdvisingResult.map((course) => ({
 			CourseId: course.CourseId,
 			CourseDescription: course.CourseDescription,
+			CourseType: course.CourseType,
+			Units: course.Units,
 		}));
 
 		// Return the results in the specified object format
