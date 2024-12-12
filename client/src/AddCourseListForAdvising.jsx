@@ -28,7 +28,6 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 	}, [studentNumber]);
 
 	const handleAddCourse = (course) => {
-		// Add the course object to the coursesToAdd array
 		setCoursesToAdd([
 			...coursesToAdd,
 			{
@@ -44,7 +43,6 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 
 	const handleSubmitCourseList = async () => {
 		try {
-			// Send a single POST request with all courses to be added
 			const response = await fetch('http://localhost:9090/addCoursesForAdvising', {
 				method: 'POST',
 				headers: {
@@ -63,18 +61,15 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 			const data = await response.json();
 
 			if (data.success) {
-				// Update the state after successful submission
 				setCoursesForAdvising([...coursesForAdvising, ...coursesToAdd]);
-				setCoursesToAdd([]); // Clear the coursesToAdd array
+				setCoursesToAdd([]);
 			} else {
 				console.error('Error adding courses for advising:', data.error);
-				// Revert the state if the submission fails
 				setCoursesNotTaken([...coursesNotTaken, ...coursesToAdd]);
 				setCoursesToAdd([]);
 			}
 		} catch (error) {
 			console.error('Error adding courses for advising:', error);
-			// Revert the state if an error occurs during the API call
 			setCoursesNotTaken([...coursesNotTaken, ...coursesToAdd]);
 			setCoursesToAdd([]);
 		}
@@ -166,9 +161,11 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 
 							<div className="advising-buttons d-flex gap-2 mt-4">
 								<button className="btn btn-outline-secondary flex-grow-1">Navigate Back</button>
-								<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
-									Submit Course List
-								</button>
+								{coursesToAdd.length > 0 && (
+									<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
+										Save Course List
+									</button>
+								)}
 							</div>
 						</div>
 					</div>
