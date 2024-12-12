@@ -46,6 +46,7 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 	const handleDeleteCourse = (courseToDelete) => {
 		setCoursesForAdvising(coursesForAdvising.filter((course) => course.CourseId !== courseToDelete.CourseId));
 		setCoursesToAdd(coursesToAdd.filter((course) => course.CourseId !== courseToDelete.CourseId));
+		setCoursesNotTaken([...coursesNotTaken, courseToDelete]);
 
 		if (courseToDelete.isSaved) {
 			setCoursesToDelete([...coursesToDelete, { StudentNumber: studentNumber, CourseId: courseToDelete.CourseId }]);
