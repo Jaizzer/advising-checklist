@@ -7,6 +7,7 @@ import { insertStudent } from './student.js';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
 import insertStudentCourseListItems from './insertStudentCourseListItems.js';
+import deleteStudentCourseListItem from './deleteStudentCourseListItem.js';
 
 // Initialize an Express application
 const app = express();
@@ -155,51 +156,57 @@ app.post('/addCourse', async (req, res) => {
 	}
 });
 
-// POST route for adding a course list item
-app.post('/addCoursesforAdvising', async (req, res) => {
+// POST route for updating the course list
+app.post('/updateCourseList', async (req, res) => {
 	try {
 		// Extract data from the request body
-		const { coursesToAdd } = req.body;
+		const { coursesToAdd, coursesToDelete } = req.body;
 
-		// Validate required fields
-		if (!coursesToAdd || coursesToAdd.length === 0) {
-			return res.status(400).json({
-				success: false,
-				message: 'Missing required fields: coursesToAdd.',
-			});
-		}
-
-		// Iterate through each course to add
+		// Process courses to add
 		for (const course of coursesToAdd) {
 			// Validate each course object
-			if (!course.StudentNumber || !course.CourseId || !course.CourseStatus) {
+			if (!course.CourseId || !course.CourseStatus) {
 				return res.status(400).json({
 					success: false,
-					message: 'Invalid course data in the request body.',
+					message: 'Invalid course data in coursesToAdd.',
 				});
 			}
 
 			// Call the insertStudentCourseListItems function
-			const result = await insertStudentCourseListItems({
-				StudentNumber: course.StudentNumber,
-				CourseId: course.CourseId,
-				CourseStatus: course.CourseStatus,
-				Units: course.Units || null, // Handle cases where Units might be undefined
-				CourseType: course.CourseType || null, // Handle cases where CourseType might be undefined
-			});
+			const result = await insertStudentCourseListItems(course);
+
+			if (!result.success) {
+				return res.status(500).json({
+					success: false,
+					message: `Error adding course ${course.CourseId}: ${result.error}`,
+				});
+			}
+		}
+
+		// Process courses to delete
+		for (const courseToDelete of coursesToDelete) {
+			// Call the deleteStudentCourseListItem function
+			const result = await deleteStudentCourseListItem(courseToDelete);
+
+			if (!result.success) {
+				return res.status(500).json({
+					success: false,
+					message: `Error deleting course ${courseToDelete}: ${result.error}`,
+				});
+			}
 		}
 
 		// Send a success response
 		res.status(200).json({
 			success: true,
-			message: 'Course list items successfully added.',
+			message: 'Course list updated successfully.',
 		});
 	} catch (error) {
 		// Handle errors and send an error response
-		console.error('Error in /addCoursesforAdvising:', error.message);
+		console.error('Error in /updateCourseList:', error.message);
 		res.status(500).json({
 			success: false,
-			message: 'An error occurred while adding the course list items.',
+			message: 'An error occurred while updating the course list.',
 			error: error.message,
 		});
 	}
