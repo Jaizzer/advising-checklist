@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 
-const AddCourseListForAdvising = ({ studentNumber }) => {
+export default function AddCourseListForAdvising({ studentNumber }) {
 	const [coursesNotTaken, setCoursesNotTaken] = useState([]);
 	const [coursesForAdvising, setCoursesForAdvising] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [coursesToAdd, setCoursesToAdd] = useState([]);
+	const [coursesToDelete, setCoursesToDelete] = useState([]);
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -16,7 +17,7 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 				}
 				const data = await response.json();
 				setCoursesNotTaken(data.CourseNotYetTaken);
-				setCoursesForAdvising(data.CoursesForAdvising);
+				setCoursesForAdvising(data.CoursesForAdvising.map((course) => ({ ...course, isSaved: true })));
 			} catch (err) {
 				setError(err.message);
 			} finally {
@@ -36,21 +37,31 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 				CourseStatus: 'For Advising',
 				Units: course.Units,
 				CourseType: course.CourseType,
+				isSaved: false,
 			},
 		]);
 		setCoursesNotTaken(coursesNotTaken.filter((c) => c.CourseId !== course.CourseId));
 	};
 
+	const handleDeleteCourse = (courseToDelete) => {
+		setCoursesForAdvising(coursesForAdvising.filter((course) => course.CourseId !== courseToDelete.CourseId));
+		setCoursesToAdd(coursesToAdd.filter((course) => course.CourseId !== courseToDelete.CourseId));
+
+		if (courseToDelete.isSaved) {
+			setCoursesToDelete([...coursesToDelete, { StudentNumber: studentNumber, CourseId: courseToDelete.CourseId }]);
+		}
+	};
+
 	const handleSubmitCourseList = async () => {
 		try {
-			const response = await fetch('http://localhost:9090/addCoursesForAdvising', {
+			const response = await fetch('http://localhost:9090/updateCourseList', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					studentNumber: studentNumber,
 					coursesToAdd: coursesToAdd,
+					coursesToDelete: coursesToDelete,
 				}),
 			});
 
@@ -61,15 +72,17 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 			const data = await response.json();
 
 			if (data.success) {
-				setCoursesForAdvising([...coursesForAdvising, ...coursesToAdd]);
+				const updatedCoursesToAdd = coursesToAdd.map((course) => ({ ...course, isSaved: true }));
+				setCoursesForAdvising([...coursesForAdvising.filter((course) => course.isSaved), ...updatedCoursesToAdd]);
 				setCoursesToAdd([]);
+				setCoursesToDelete([]); // Clear coursesToDelete after successful submission
 			} else {
-				console.error('Error adding courses for advising:', data.error);
+				console.error('Error updating course list:', data.error);
 				setCoursesNotTaken([...coursesNotTaken, ...coursesToAdd]);
 				setCoursesToAdd([]);
 			}
 		} catch (error) {
-			console.error('Error adding courses for advising:', error);
+			console.error('Error updating course list:', error);
 			setCoursesNotTaken([...coursesNotTaken, ...coursesToAdd]);
 			setCoursesToAdd([]);
 		}
@@ -142,6 +155,7 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 											<th scope="col">Course</th>
 											<th scope="col">Course Type</th>
 											<th scope="col">Units</th>
+											<th scope="col">Actions</th>
 										</tr>
 									</thead>
 									<tbody>
@@ -150,6 +164,11 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 												<td>{course.CourseId}</td>
 												<td>{course.CourseType}</td>
 												<td>{course.Units}</td>
+												<td>
+													<button className="btn btn-sm btn-danger" onClick={() => handleDeleteCourse(course)}>
+														Remove
+													</button>
+												</td>
 											</tr>
 										))}
 									</tbody>
@@ -160,8 +179,7 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 							</div>
 
 							<div className="advising-buttons d-flex gap-2 mt-4">
-								<button className="btn btn-outline-secondary flex-grow-1">Navigate Back</button>
-								{coursesToAdd.length > 0 && (
+								{(coursesToAdd.length > 0 || coursesToDelete.length > 0) && (
 									<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
 										Save Course List
 									</button>
@@ -173,6 +191,4 @@ const AddCourseListForAdvising = ({ studentNumber }) => {
 			</div>
 		</>
 	);
-};
-
-export default AddCourseListForAdvising;
+}
