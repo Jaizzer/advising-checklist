@@ -156,38 +156,50 @@ app.post('/addCourse', async (req, res) => {
 });
 
 // POST route for adding a course list item
-app.post('/addCourseforAdvising', async (req, res) => {
+app.post('/addCoursesforAdvising', async (req, res) => {
 	try {
 		// Extract data from the request body
-		const { studentNumber, courseId, courseStatus } = req.body;
+		const { coursesToAdd } = req.body;
 
 		// Validate required fields
-		if (!studentNumber || !courseId || !courseStatus) {
+		if (!coursesToAdd || coursesToAdd.length === 0) {
 			return res.status(400).json({
 				success: false,
-				message: 'Missing required fields: studentNumber, courseId, or courseStatus.',
+				message: 'Missing required fields: coursesToAdd.',
 			});
 		}
 
-		// Call the insertStudentCourseListItem function
-		const result = await insertStudentCourseListItems({
-			StudentNumber: studentNumber,
-			CourseId: courseId,
-			CourseStatus: courseStatus,
-		});
+		// Iterate through each course to add
+		for (const course of coursesToAdd) {
+			// Validate each course object
+			if (!course.StudentNumber || !course.CourseId || !course.CourseStatus) {
+				return res.status(400).json({
+					success: false,
+					message: 'Invalid course data in the request body.',
+				});
+			}
+
+			// Call the insertStudentCourseListItems function
+			const result = await insertStudentCourseListItems({
+				StudentNumber: course.StudentNumber,
+				CourseId: course.CourseId,
+				CourseStatus: course.CourseStatus,
+				Units: course.Units || null, // Handle cases where Units might be undefined
+				CourseType: course.CourseType || null, // Handle cases where CourseType might be undefined
+			});
+		}
 
 		// Send a success response
 		res.status(200).json({
 			success: true,
-			message: 'Course list item successfully added.',
-			data: result,
+			message: 'Course list items successfully added.',
 		});
 	} catch (error) {
 		// Handle errors and send an error response
-		console.error('Error in /addSubjectForAdvising:', error.message);
+		console.error('Error in /addCoursesforAdvising:', error.message);
 		res.status(500).json({
 			success: false,
-			message: 'An error occurred while adding the course list item.',
+			message: 'An error occurred while adding the course list items.',
 			error: error.message,
 		});
 	}
