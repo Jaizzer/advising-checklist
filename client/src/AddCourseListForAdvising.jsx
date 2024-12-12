@@ -8,8 +8,6 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 	const [coursesToAdd, setCoursesToAdd] = useState([]);
 	const [coursesToDelete, setCoursesToDelete] = useState([]);
 
-	console.log(coursesNotTaken);
-
 	useEffect(() => {
 		const fetchCourses = async () => {
 			try {
@@ -108,7 +106,7 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 						<h1 className="mb-0">Student Course Checklist</h1>
 						<p>I - BS COMPUTER SCIENCE</p>
 
-						<div className="checklist-table table-responsive mt-4">
+						<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
 							<table className="table table-hover align-middle">
 								<thead>
 									<tr>
@@ -127,13 +125,9 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 											<td>{course.CourseType}</td>
 											<td>{course.Units}</td>
 											<td>
-												{Array.isArray(course.Prerequisites)
-													? course.Prerequisites.join(', ')
-													: course.Prerequisites || 'None'}
+												{course.Prerequisites && course.Prerequisites.length > 0 ? course.Prerequisites.join(', ') : 'None'}
 											</td>
-											<td>
-												{Array.isArray(course.Corequisites) ? course.Corequisites.join(', ') : course.Corequisites || 'None'}
-											</td>
+											<td>{course.Corequisites && course.Corequisites.length > 0 ? course.Corequisites.join(', ') : 'None'}</td>
 											<td>
 												<button className="btn btn-sm btn-primary" onClick={() => handleAddCourse(course)}>
 													Add to Advising
@@ -143,8 +137,8 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 									))}
 								</tbody>
 							</table>
-							<p className="text-end">TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}</p>
 						</div>
+						<p className="text-end">TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}</p>
 					</div>
 				</div>
 			</div>
@@ -155,7 +149,7 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 					<div className="card-body">
 						<h1 className="mb-0">Course List for Advising</h1>
 
-						<div className="checklist-table table-responsive mt-4">
+						<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
 							<table className="table table-hover align-middle">
 								<thead>
 									<tr>
@@ -180,11 +174,10 @@ export default function AddCourseListForAdvising({ studentNumber }) {
 									))}
 								</tbody>
 							</table>
-							<p className="text-end">
-								TOTAL UNITS: {[...coursesForAdvising, ...coursesToAdd].reduce((total, course) => total + (course.Units || 0), 0)}
-							</p>
 						</div>
-
+						<p className="text-end">
+							TOTAL UNITS: {[...coursesForAdvising, ...coursesToAdd].reduce((total, course) => total + (course.Units || 0), 0)}
+						</p>
 						<div className="advising-buttons d-flex gap-2 mt-4">
 							{(coursesToAdd.length > 0 || coursesToDelete.length > 0) && (
 								<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
