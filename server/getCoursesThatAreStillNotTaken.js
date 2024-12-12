@@ -4,7 +4,7 @@ import pool from './database.js';
 export async function getCoursesThatAreStillNotTaken(studentNumber) {
 	// Ensure studentNumber is provided before proceeding
 	if (!studentNumber) {
-		throw new Error('Student number is required.'); // Throw error if no student number is provided
+		throw new Error('Student number is required.');
 	}
 
 	// Establish a connection to the database from the connection pool
@@ -15,12 +15,11 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
 		const [studentCheckResult] = await connection.query(`SELECT 1 FROM Student WHERE StudentNumber = ?`, [studentNumber]);
 
 		if (studentCheckResult.length === 0) {
-			// If no student is found with the provided student number, throw error
 			throw new Error('Student not found.');
 		}
 
 		// Query to fetch courses that have not been taken by the student
-		const [result] = await connection.query(
+		const [notTakenResult] = await connection.query(
 			`SELECT 
                 pc.StudentProgram, 
                 pc.CourseId, 
@@ -44,26 +43,39 @@ export async function getCoursesThatAreStillNotTaken(studentNumber) {
 			[studentNumber, studentNumber, studentNumber]
 		);
 
-		if (result.length === 0) {
-			// If no courses are found that have not been taken, throw error
-			throw new Error('No courses found that have not been taken.');
-		}
+		// Query to fetch courses that are "For Advising"
+		const [forAdvisingResult] = await connection.query(
+			`SELECT 
+                scl.CourseId, 
+                c.CourseDescription 
+            FROM StudentCourseList scl
+            JOIN Course c ON scl.CourseId = c.CourseId
+            WHERE scl.StudentNumber = ? 
+              AND scl.CourseStatus = 'For Advising'`,
+			[studentNumber]
+		);
 
 		// Prepare the course data in the desired format
-		const coursesNotTaken = result.map((course) => ({
+		const coursesNotTaken = notTakenResult.map((course) => ({
 			StudentProgram: course.StudentProgram,
 			CourseId: course.CourseId,
 			CourseDescription: course.CourseDescription,
-			CourseType: course.CourseType || 'Not Assigned', // Default to 'Not Assigned' if missing
+			CourseType: course.CourseType || 'Not Assigned',
 		}));
 
-		// Return the list of courses that have not been taken
-		return { success: true, courses: coursesNotTaken };
+		const coursesForAdvising = forAdvisingResult.map((course) => ({
+			CourseId: course.CourseId,
+			CourseDescription: course.CourseDescription,
+		}));
+
+		// Return the results in the specified object format
+		return {
+			CourseNotYetTaken: coursesNotTaken,
+			CoursesForAdvising: coursesForAdvising,
+		};
 	} catch (error) {
-		// Rethrow the error to propagate it upwards
 		throw new Error(error.message);
 	} finally {
-		// Release the connection back to the pool after all operations are complete
 		connection.release();
 	}
 }
