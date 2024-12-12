@@ -6,7 +6,7 @@ import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
-import { insertStudentCourseListItems } from './insertStudentCourseListItems.js';
+import insertStudentCourseListItems from './insertStudentCourseListItems.js';
 
 // Initialize an Express application
 const app = express();
