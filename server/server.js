@@ -6,6 +6,7 @@ import { insertAdviser } from './adviser.js';
 import { insertStudent } from './student.js';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
+import { insertStudentCourseListItems } from './insertStudentCourseListItems.js';
 
 // Initialize an Express application
 const app = express();
@@ -149,6 +150,44 @@ app.post('/addCourse', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while adding the course.',
+			error: error.message,
+		});
+	}
+});
+
+// POST route for adding a course list item
+app.post('/addCourseforAdvising', async (req, res) => {
+	try {
+		// Extract data from the request body
+		const { studentNumber, courseId, courseStatus } = req.body;
+
+		// Validate required fields
+		if (!studentNumber || !courseId || !courseStatus) {
+			return res.status(400).json({
+				success: false,
+				message: 'Missing required fields: studentNumber, courseId, or courseStatus.',
+			});
+		}
+
+		// Call the insertStudentCourseListItem function
+		const result = await insertStudentCourseListItems({
+			StudentNumber: studentNumber,
+			CourseId: courseId,
+			CourseStatus: courseStatus,
+		});
+
+		// Send a success response
+		res.status(200).json({
+			success: true,
+			message: 'Course list item successfully added.',
+			data: result,
+		});
+	} catch (error) {
+		// Handle errors and send an error response
+		console.error('Error in /addSubjectForAdvising:', error.message);
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while adding the course list item.',
 			error: error.message,
 		});
 	}
