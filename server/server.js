@@ -193,6 +193,26 @@ app.post('/addCourseforAdvising', async (req, res) => {
 	}
 });
 
+// GET route to fetch courses not taken and courses for advising
+app.get('/getCoursesForStudent/:studentNumber', async (req, res) => {
+	try {
+		const studentNumber = req.params.studentNumber;
+
+		// Call the function to get the courses
+		const result = await getCoursesThatAreStillNotTaken(studentNumber);
+
+		// Send the result as a JSON response
+		res.status(200).json(result);
+	} catch (error) {
+		console.error('Error in /getCoursesForStudent:', error.message);
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while fetching courses.',
+			error: error.message,
+		});
+	}
+});
+
 // Start the server and listen on the specified port
 app.listen(PORT, () => {
 	console.log(`Server is running at http://localhost:${PORT}`);
