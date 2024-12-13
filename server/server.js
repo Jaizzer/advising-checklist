@@ -11,6 +11,7 @@ import deleteStudentCourseListItem from './deleteStudentCourseListItem.js';
 import { getAdviserProgramData } from './getAdviserProgramData.js';
 import { getCourseChecklist } from './getCourseChecklist.js';
 import deleteCourseFromProgramChecklist from './deleteCourseFromProgramChecklist.js';
+import editCourseFromProgramChecklist from './editCourseFromProgramChecklist.js';
 
 // Initialize an Express application
 const app = express();
@@ -315,6 +316,44 @@ app.get('/courseChecklist/:program', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while fetching the course checklist.',
+			error: error.message,
+		});
+	}
+});
+
+// POST route to edit a course in the ProgramChecklist
+app.post('/editCourseFromProgramChecklist', async (req, res) => {
+	const { currentCourseID, updatedCourseData, studentProgram } = req.body;
+
+	try {
+		// Validate required fields
+		if (!currentCourseID || !updatedCourseData || !studentProgram) {
+			return res.status(400).json({
+				success: false,
+				message: 'currentCourseID, updatedCourseData, and studentProgram are required.',
+			});
+		}
+
+		// Call the editCourseFromProgramChecklist function with the provided data
+		const result = await editCourseFromProgramChecklist(currentCourseID, updatedCourseData, studentProgram);
+
+		// Respond based on the result
+		if (result.success) {
+			res.status(200).json({
+				success: true,
+				message: result.message,
+			});
+		} else {
+			res.status(400).json({
+				success: false,
+				message: result.error, // Send the error message from the function
+			});
+		}
+	} catch (error) {
+		// Handle unexpected errors
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while editing the course from the ProgramChecklist.',
 			error: error.message,
 		});
 	}
