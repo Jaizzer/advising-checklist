@@ -301,7 +301,9 @@ export default function CourseChecklist({ program, isAdviser }) {
 					<div key={index} className="year-container">
 						<h2 className="year-title">{year}</h2>
 						<div className="semester-row">
-							{Object.keys(courseData[year]).map((semester, index) => renderSemester(semester, courseData[year][semester], index))}
+							{Object.keys(courseData[year])
+								.sort()
+								.map((semester, index) => renderSemester(semester, courseData[year][semester], index))}{' '}
 						</div>
 					</div>
 				))}
