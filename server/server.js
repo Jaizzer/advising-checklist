@@ -12,6 +12,7 @@ import { getAdviserProgramData } from './getAdviserProgramData.js';
 import { getCourseChecklist } from './getCourseChecklist.js';
 import deleteCourseFromProgramChecklist from './deleteCourseFromProgramChecklist.js';
 import editCourseFromProgramChecklist from './editCourseFromProgramChecklist.js';
+import approveStudentCourseList from './approveStudentCourseList.js';
 
 // Initialize an Express application
 const app = express();
@@ -354,6 +355,38 @@ app.post('/editCourseFromProgramChecklist', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while editing the course from the ProgramChecklist.',
+			error: error.message,
+		});
+	}
+});
+
+// POST route to approve a student's course list
+app.post('/approveStudentCourseList', async (req, res) => {
+	const { studentNumber } = req.body; // Extract studentNumber from the request body
+	console.log("studentNumber");
+
+	try {
+		// Validate the student number
+		if (!studentNumber) {
+			return res.status(400).json({
+				success: false,
+				message: 'Student number is required.',
+			});
+		}
+
+		// Call the approveStudentCourseList function with the provided student number
+		const result = await approveStudentCourseList(studentNumber);
+
+		// Respond with a success message
+		res.status(200).json({
+			success: true,
+			message: result.message,
+		});
+	} catch (error) {
+		// Handle unexpected errors
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while approving the student course list.',
 			error: error.message,
 		});
 	}
