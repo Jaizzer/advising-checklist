@@ -10,6 +10,7 @@ import insertStudentCourseListItems from './insertStudentCourseListItems.js';
 import deleteStudentCourseListItem from './deleteStudentCourseListItem.js';
 import { getAdviserProgramData } from './getAdviserProgramData.js';
 import { getCourseChecklist } from './getCourseChecklist.js';
+import deleteCourseFromProgramChecklist from './deleteCourseFromProgramChecklist.js';
 
 // Initialize an Express application
 const app = express();
@@ -121,6 +122,44 @@ app.post('/students', async (req, res) => {
 		}
 	} catch (error) {
 		res.status(500).json({ error: `Server error: ${error.message}` });
+	}
+});
+
+// DELETE route to remove a course from the ProgramChecklist
+app.delete('/deleteCourseFromProgramChecklist', async (req, res) => {
+	const { courseId, program } = req.body; // Extract data from the request body
+
+	try {
+		// Validate required fields
+		if (!courseId || !program) {
+			return res.status(400).json({
+				success: false,
+				message: 'Both courseId and program are required.',
+			});
+		}
+
+		// Call the deleteCourseFromProgramChecklist function
+		const result = await deleteCourseFromProgramChecklist(courseId, program);
+
+		// Respond based on the result
+		if (result.success) {
+			res.status(200).json({
+				success: true,
+				message: `Course with ID ${courseId} successfully deleted from Program ${program}.`,
+			});
+		} else {
+			res.status(404).json({
+				success: false,
+				message: result.error, // Send the error message from the function
+			});
+		}
+	} catch (error) {
+		// Log and handle unexpected errors
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while deleting the course.',
+			error: error.message,
+		});
 	}
 });
 
