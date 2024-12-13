@@ -13,6 +13,7 @@ import { getCourseChecklist } from './getCourseChecklist.js';
 import deleteCourseFromProgramChecklist from './deleteCourseFromProgramChecklist.js';
 import editCourseFromProgramChecklist from './editCourseFromProgramChecklist.js';
 import approveStudentCourseList from './approveStudentCourseList.js';
+import verifyID from './verifyID.js';
 
 // Initialize an Express application
 const app = express();
@@ -363,7 +364,7 @@ app.post('/editCourseFromProgramChecklist', async (req, res) => {
 // POST route to approve a student's course list
 app.post('/approveStudentCourseList', async (req, res) => {
 	const { studentNumber } = req.body; // Extract studentNumber from the request body
-	console.log("studentNumber");
+	console.log('studentNumber');
 
 	try {
 		// Validate the student number
@@ -387,6 +388,43 @@ app.post('/approveStudentCourseList', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while approving the student course list.',
+			error: error.message,
+		});
+	}
+});
+
+// POST route to verify if the given ID belongs to an Adviser or Student
+app.post('/verifyID', async (req, res) => {
+	const { id } = req.body; // Extract the ID from the request body
+
+	try {
+		// Validate the ID
+		if (!id) {
+			return res.status(400).json({
+				success: false,
+				message: 'ID is required.',
+			});
+		}
+
+		// Call the verifyID function to determine whether the ID belongs to an Adviser, Student, or is invalid
+		const result = await verifyID(id);
+
+		if (result === 'Adviser' || result === 'Student') {
+			res.status(200).json({
+				success: true,
+				message: `The ID belongs to a ${result}.`,
+			});
+		} else {
+			res.status(400).json({
+				success: false,
+				message: result, // Error message from verifyID
+			});
+		}
+	} catch (error) {
+		// Handle any unexpected errors
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while verifying the ID.',
 			error: error.message,
 		});
 	}
