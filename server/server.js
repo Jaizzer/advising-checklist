@@ -8,6 +8,7 @@ import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
 import insertStudentCourseListItems from './insertStudentCourseListItems.js';
 import deleteStudentCourseListItem from './deleteStudentCourseListItem.js';
+import { getAdviserProgramData } from './getAdviserProgramData.js';
 
 // Initialize an Express application
 const app = express();
@@ -227,6 +228,32 @@ app.get('/getCoursesForStudent/:studentNumber', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while fetching courses.',
+			error: error.message,
+		});
+	}
+});
+
+// Route to get adviser program data
+app.get('/adviser/:adviserId', async (req, res) => {
+	try {
+		// Extract adviser ID from the route parameters
+		const { adviserId } = req.params;
+
+		// Call the function to fetch the adviser program data
+		const data = await getAdviserProgramData(adviserId);
+
+		// Respond with the retrieved data
+		res.status(200).json({
+			success: true,
+			message: 'Adviser program data fetched successfully.',
+			data,
+		});
+	} catch (error) {
+		// Handle errors
+		console.error('Error fetching adviser program data:', error.message);
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while fetching adviser program data.',
 			error: error.message,
 		});
 	}
