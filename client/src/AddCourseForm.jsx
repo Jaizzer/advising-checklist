@@ -143,8 +143,8 @@ function AddCourseForm({ StudentProgram }) {
 						<label htmlFor="PrescribedSemester">Prescribed Semester</label>
 						<select id="PrescribedSemester" value={formData.PrescribedSemester} onChange={handleChange}>
 							<option value="">Select option</option>
-							<option value="1">Semester 1</option>
-							<option value="2">Semester 2</option>
+							<option value="Semester 1">Semester 1</option>
+							<option value="Semester 2">Semester 2</option>
 						</select>
 					</div>
 					<div className="form-group">
