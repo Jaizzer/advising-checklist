@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
 
-export default function CourseChecklist({ program }) {
+export default function CourseChecklist({ program, isAdviser }) {
 	const [courseData, setCourseData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
-
-	// Log the fetched data to debug
-	console.log(courseData);
 
 	useEffect(() => {
 		const fetchCourseData = async () => {
@@ -124,10 +121,12 @@ export default function CourseChecklist({ program }) {
 					</div>
 				))}
 
-			{/* Update Button */}
-			<div className="text-end mt-4">
-				<button className="btn update">Update Record</button>
-			</div>
+			{/* Conditionally render Update Record button based on isAdviser prop */}
+			{isAdviser && (
+				<div className="text-end mt-4">
+					<button className="btn update">Update Record</button>
+				</div>
+			)}
 		</div>
 	);
 }
