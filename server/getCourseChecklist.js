@@ -14,7 +14,7 @@ export async function getCourseChecklist(program) {
 		// Start a transaction
 		await connection.beginTransaction();
 
-		// Query to fetch course checklist details for the given program
+		// Query to fetch course checklist details for the given program, including Units
 		const [courseChecklistResult] = await connection.query(
 			`SELECT 
 				pc.StudentProgram, 
@@ -23,8 +23,10 @@ export async function getCourseChecklist(program) {
 				pc.PrescribedYear, 
 				pc.PrescribedSemester,
 				pc.DateLastUpdated, 
-				pc.TimeLastUpdated
+				pc.TimeLastUpdated,
+				c.Units
 			FROM ProgramChecklist pc
+			JOIN Course c ON pc.CourseId = c.CourseId
 			WHERE pc.StudentProgram = ?`,
 			[program] // Use the given program as a parameter for the query
 		);
@@ -35,12 +37,13 @@ export async function getCourseChecklist(program) {
 			throw new Error('No course checklist found for the program.');
 		}
 
-		// Prepare the course checklist data in the desired format
+		// Prepare the course checklist data in the desired format, including Units
 		const courseChecklist = courseChecklistResult.map((course) => ({
 			CourseId: course.CourseId,
 			CourseType: course.CourseType || 'Not Assigned', // Default to 'Not Assigned' if missing
 			PrescribedYear: course.PrescribedYear,
 			PrescribedSemester: course.PrescribedSemester,
+			Units: course.Units || 'N/A', // Include Units, default to 'N/A' if missing
 			DateLastUpdated: course.DateLastUpdated,
 			TimeLastUpdated: course.TimeLastUpdated,
 		}));
