@@ -411,8 +411,7 @@ app.post('/verifyID', async (req, res) => {
 
 		if (result === 'Adviser' || result === 'Student') {
 			res.status(200).json({
-				success: true,
-				message: `The ID belongs to a ${result}.`,
+				position: result,
 			});
 		} else {
 			res.status(400).json({
