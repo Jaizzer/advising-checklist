@@ -125,10 +125,10 @@ function AddCourseForm({ StudentProgram }) {
 						<label htmlFor="PrescribedYear">Prescribed Year</label>
 						<select id="PrescribedYear" value={formData.PrescribedYear} onChange={handleChange}>
 							<option value="">Select option</option>
-							<option value="1">Year 1</option>
-							<option value="2">Year 2</option>
-							<option value="3">Year 3</option>
-							<option value="4">Year 4</option>
+							<option value="Year 1">Year 1</option>
+							<option value="Year 2">Year 2</option>
+							<option value="Year 3">Year 3</option>
+							<option value="Year 4">Year 4</option>
 						</select>
 					</div>
 
