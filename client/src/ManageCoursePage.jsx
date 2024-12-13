@@ -2,7 +2,8 @@ import { useState } from 'react';
 import CourseTable from './CourseTable'; // Make sure this path is correct
 import styles from './ManageCoursePage.module.css'; // Create a corresponding CSS module file
 import AddCourseForm from './AddCourseForm';
-export default function ManageCoursePage({ program }) {
+
+export default function ManageCoursePage({ program, isAdviser }) {
 	const [isEdit, setIsEdit] = useState(false); // State to manage whether we are in edit mode
 	const [isAddingCourse, setIsAddingCourse] = useState(false);
 
@@ -24,16 +25,22 @@ export default function ManageCoursePage({ program }) {
 					{/* Manage Courses Title and Buttons */}
 					<div className="d-flex align-items-center mb-4">
 						<h1 className={`${styles['title_page']} fw-bold`}>Manage Courses</h1>
-						<div className={`${styles['btn-func']}`}>
-							<button className={`${styles['btn-custom']} ${styles['btn-add']}`} onClick={handleMakeEdits}>
-								{isEdit ? 'Done Editing' : 'Make Edits'} {/* Button text changes based on isEdit */}
-							</button>
-						</div>
-						<div className={`${styles['btn-func']}`}>
-							<button className={`${styles['btn-custom']} ${styles['btn-add']}`} onClick={handleAddButton}>
-								Add Course
-							</button>
-						</div>
+
+						{/* Only show the "Make Edits" and "Add Course" buttons if isAdviser is true */}
+						{isAdviser && (
+							<>
+								<div className={`${styles['btn-func']}`}>
+									<button className={`${styles['btn-custom']} ${styles['btn-add']}`} onClick={handleMakeEdits}>
+										{isEdit ? 'Done Editing' : 'Make Edits'} {/* Button text changes based on isEdit */}
+									</button>
+								</div>
+								<div className={`${styles['btn-func']}`}>
+									<button className={`${styles['btn-custom']} ${styles['btn-add']}`} onClick={handleAddButton}>
+										Add Course
+									</button>
+								</div>
+							</>
+						)}
 					</div>
 
 					{/* Major Courses Section */}

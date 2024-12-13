@@ -61,6 +61,7 @@ export default function AdvisingCourses({ studentNumber }) {
 			<div className={`card shadow-sm ${styles['card-list']}`}>
 				<div className={styles[`card-body`]}>
 					<h1 className="mb-0">Course List for Advising</h1>
+					<p className={styles['submission-label']}>Submitted: November 23, 2024</p>
 
 					{/* Advising Table */}
 					<div className={`${styles['checklist-table']} table-responsive mt-4`}>
