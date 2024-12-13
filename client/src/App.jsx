@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import MainContent from './MainContent';
 
 export default function App() {
 	const [id, setId] = useState(''); // State for the ID input
@@ -53,11 +54,7 @@ export default function App() {
 					</form>
 				</>
 			) : (
-				<div>
-					<p>
-						You logged in as: <strong>{position}</strong>
-					</p>
-				</div>
+				<MainContent id={id}></MainContent>
 			)}
 		</div>
 	);
