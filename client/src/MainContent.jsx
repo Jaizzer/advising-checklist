@@ -2,11 +2,11 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 
 // Pretend these components already exist
-import Dashboard from './Dashboard';
-import StudentRecords from './StudentRecords';
-import AdvisingRecords from './AdvisingRecords';
-import ManageCourses from './ManageCourses';
-import Logout from './Logout';
+import DashboardPage from './Dashboard';
+import StudentRecordsPage from './StudentRecords';
+import AdvisingRecordsPage from './AdvisingRecords';
+import ManageCoursesPage from './ManageCourses';
+import LogoutPage from './Logout';
 
 export default function MainContent({ id, position }) {
 	const [activeItem, setActiveItem] = useState('Dashboard');
@@ -20,15 +20,15 @@ export default function MainContent({ id, position }) {
 	const renderContent = () => {
 		switch (activeItem) {
 			case 'Dashboard':
-				return <Dashboard />;
+				return <DashboardPage />;
 			case 'Student Records':
-				return <StudentRecords />;
+				return <StudentRecordsPage />;
 			case 'Advising Records':
-				return <AdvisingRecords />;
+				return <AdvisingRecordsPage />;
 			case 'Manage Courses':
-				return <ManageCourses />;
+				return <ManageCoursesPage />;
 			case 'Logout':
-				return <Logout />;
+				return <LogoutPage />;
 			default:
 				return <div>Please select a menu item</div>;
 		}
