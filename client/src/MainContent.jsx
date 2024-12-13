@@ -1,3 +1,3 @@
-export default function MainContent({ id }) {
-	return <div>{id}</div>;
+export default function MainContent({ id, position }) {
+	return <div>{id}{position}</div>;
 }

@@ -54,7 +54,7 @@ export default function App() {
 					</form>
 				</>
 			) : (
-				<MainContent id={id}></MainContent>
+				<MainContent id={id} position={position}></MainContent>
 			)}
 		</div>
 	);
