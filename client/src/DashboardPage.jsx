@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styles from './Dashboard.module.css'; // Import the CSS module
 import forAdvisingIcon from './assets/Icon_ForAdvising.svg';
 import accomplishedIcon from './assets/Icon_Accomplished.svg';
 import totalStudentsIcon from './assets/Icon_TotalStudents.svg';
@@ -8,7 +9,7 @@ function AdviserDashboard({ adviserId }) {
 	const [adviserData, setAdviserData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
-	const [selectedStudent, setSelectedStudent] = useState(null); // State to store selected student
+	const [selectedStudent, setSelectedStudent] = useState(null);
 
 	useEffect(() => {
 		const fetchAdviserData = async () => {
@@ -32,7 +33,6 @@ function AdviserDashboard({ adviserId }) {
 	}, [adviserId]);
 
 	const handleViewChecklist = (student) => {
-		// Passing both the student number and name to the selectedStudent state
 		setSelectedStudent({
 			studentNumber: student.Student.StudentNumber,
 			studentName: student.Student.StudentName,
@@ -40,7 +40,7 @@ function AdviserDashboard({ adviserId }) {
 	};
 
 	const handleBack = () => {
-		setSelectedStudent(null); // Reset selected student to null to go back to the student list
+		setSelectedStudent(null);
 	};
 
 	if (isLoading) {
@@ -54,64 +54,54 @@ function AdviserDashboard({ adviserId }) {
 	const { StudentsForAdvising, StudentsUnderAdvising } = adviserData;
 
 	return (
-		<div>
-			{/* Conditionally render StudentAdvising or Student List */}
+		<div className={styles['container-content']}>
 			{selectedStudent ? (
-				<StudentAdvising
-					handleBack={handleBack}
-					studentNumber={selectedStudent.studentNumber}
-					studentName={selectedStudent.studentName} // Passing student name to StudentAdvising
-				/>
+				<StudentAdvising handleBack={handleBack} studentNumber={selectedStudent.studentNumber} studentName={selectedStudent.studentName} />
 			) : (
 				<>
-					{/* Summary Section */}
-					<div className="summary-container row g-3 mb-4">
-						{/* For Advising Summary */}
+					<div className={`${styles['summary-container']} row g-3 mb-4`}>
 						<div className="col-md-4">
-							<div className="card card-summary p-3 shadow-sm">
+							<div className={`${styles['card-summary']} ${styles['card']} shadow-sm`}>
 								<div className="d-flex justify-content-between align-items-center">
 									<div>
 										<p>For Advising</p>
 										<h3 className="fw-bold">{StudentsForAdvising.length}</h3>
 									</div>
-									<img src={forAdvisingIcon} alt="For Advising" className="card-logo" />
+									<img src={forAdvisingIcon} alt="For Advising" className={styles['card-logo']} />
 								</div>
 							</div>
 						</div>
 
-						{/* Accomplished Summary */}
 						<div className="col-md-4">
-							<div className="card card-summary p-3 shadow-sm">
+							<div className={`${styles['card-summary']} ${styles['card']} shadow-sm`}>
 								<div className="d-flex justify-content-between align-items-center">
 									<div>
 										<p>Accomplished</p>
 										<h3 className="fw-bold">{StudentsUnderAdvising - StudentsForAdvising.length}</h3>
 									</div>
-									<img src={accomplishedIcon} alt="Accomplished" className="card-logo" />
+									<img src={accomplishedIcon} alt="Accomplished" className={styles['card-logo']} />
 								</div>
 							</div>
 						</div>
 
-						{/* Total Students Summary */}
 						<div className="col-md-4">
-							<div className="card card-summary p-3 shadow-sm">
+							<div className={`${styles['card-summary']} ${styles['card']} shadow-sm`}>
 								<div className="d-flex justify-content-between align-items-center">
 									<div>
 										<p>Total Students</p>
 										<h3 className="fw-bold">{StudentsUnderAdvising}</h3>
 									</div>
-									<img src={totalStudentsIcon} alt="Total Students" className="card-logo" />
+									<img src={totalStudentsIcon} alt="Total Students" className={styles['card-logo']} />
 								</div>
 							</div>
 						</div>
 					</div>
 
-					{/* Students Table */}
-					<div className="card-table card shadow-sm">
+					<div className={`${styles['card-table']} ${styles['card']} shadow-sm`}>
 						<div className="card-body">
-							<div className="table-responsive">
+							<div className={styles['table-responsive']}>
 								<table className="table table-hover align-middle">
-									<thead>
+									<thead className={styles['student-table']}>
 										<tr>
 											<th>#</th>
 											<th>Name</th>
@@ -125,7 +115,6 @@ function AdviserDashboard({ adviserId }) {
 										{StudentsForAdvising.map((student, index) => {
 											const { Student, CombinedDateTime } = student;
 
-											// Date and time parsing logic
 											const [datePart, timePart] = CombinedDateTime.split('T');
 											const [hour, minute] = timePart.split(':').map(Number);
 
@@ -159,7 +148,10 @@ function AdviserDashboard({ adviserId }) {
 													<td>{formattedDate}</td>
 													<td>{formattedTime}</td>
 													<td>
-														<button className="btn btn-sm btn-custom" onClick={() => handleViewChecklist(student)}>
+														<button
+															className={`${styles['btn-custom']} btn btn-sm`}
+															onClick={() => handleViewChecklist(student)}
+														>
 															View Checklist
 														</button>
 													</td>
