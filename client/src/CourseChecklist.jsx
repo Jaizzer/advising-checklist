@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styles from './CourseChecklist.module.css';
 
 export default function CourseChecklist({ program, isAdviser }) {
 	const [courseData, setCourseData] = useState(null);
@@ -6,6 +7,7 @@ export default function CourseChecklist({ program, isAdviser }) {
 	const [error, setError] = useState(null);
 	const [editingCourse, setEditingCourse] = useState(null);
 	const [editedValues, setEditedValues] = useState({});
+	const [isUpdating, setIsUpdating] = useState(false); // Track whether update mode is active
 
 	useEffect(() => {
 		const fetchCourseData = async () => {
@@ -196,19 +198,19 @@ export default function CourseChecklist({ program, isAdviser }) {
 	const renderSemester = (semester, courses) => {
 		const totalUnits = courses.reduce((sum, course) => sum + (course.Units || 0), 0);
 		return (
-			<div className="semester">
-				<div className="semester-header">
-					<h3 className="semester-title">{semester}</h3>
-					<p className="total-units">Total Units: {totalUnits}</p>
+			<div className={styles['semester']}>
+				<div className={styles['semester-header']}>
+					<h3 className={styles['semester-title']}>{semester}</h3>
+					<p className={styles['total-units']}>Total Units: {totalUnits}</p>
 				</div>
-				<div className="semester-table-container">
-					<table className="semester-table">
+				<div className={styles['semester-table-container']}>
+					<table className={styles['semester-table']}>
 						<thead>
 							<tr>
 								<th>Course Name</th>
 								<th>Course Type</th>
 								<th>Units</th>
-								{isAdviser && <th>Actions</th>}
+								{isUpdating && isAdviser && <th>Actions</th>} {/* Conditionally render Actions column */}
 							</tr>
 						</thead>
 						<tbody>
@@ -217,6 +219,7 @@ export default function CourseChecklist({ program, isAdviser }) {
 									<td>
 										{editingCourse === course.CourseId ? (
 											<input
+												className={styles['action-related-input']}
 												type="text"
 												value={editedValues[course.CourseId]?.CourseId || course.CourseId}
 												onChange={(e) => handleInputChange(e, course.CourseId, 'CourseId')}
@@ -228,6 +231,7 @@ export default function CourseChecklist({ program, isAdviser }) {
 									<td>
 										{editingCourse === course.CourseId ? (
 											<select
+												className={styles['action-related-input']}
 												value={editedValues[course.CourseId]?.CourseType || course.CourseType}
 												onChange={(e) => handleInputChange(e, course.CourseId, 'CourseType')}
 											>
@@ -244,30 +248,38 @@ export default function CourseChecklist({ program, isAdviser }) {
 									<td>
 										{editingCourse === course.CourseId ? (
 											<input
+												className={styles['action-related-input']}
 												type="number"
 												value={editedValues[course.CourseId]?.Units || course.Units || ''}
 												onChange={(e) => handleInputChange(e, course.CourseId, 'Units')}
+												min={1}
 											/>
 										) : (
 											course.Units || 'N/A'
 										)}
 									</td>
-									{isAdviser && (
+									{isUpdating && isAdviser && (
 										<td>
 											{editingCourse === course.CourseId ? (
 												<button
-													className="btn btn-sm btn-success"
+													className={`btn btn-sm btn-success ${styles['btn-success']}`}
 													onClick={() => handleSaveChanges(course.CourseId)}
 													disabled={!isCourseEdited(course.CourseId)}
 												>
-													Save Changes
+													Save
 												</button>
 											) : (
-												<button className="btn btn-sm btn-primary" onClick={() => handleEdit(course.CourseId)}>
+												<button
+													className={`btn btn-sm btn-primary ${styles['btn-primary']}`}
+													onClick={() => handleEdit(course.CourseId)}
+												>
 													Edit
 												</button>
 											)}
-											<button className="btn btn-sm btn-danger" onClick={() => handleDelete(course.CourseId)}>
+											<button
+												className={`btn btn-sm btn-danger ${styles['btn-danger']}`}
+												onClick={() => handleDelete(course.CourseId)}
+											>
 												Delete
 											</button>
 										</td>
@@ -283,11 +295,13 @@ export default function CourseChecklist({ program, isAdviser }) {
 
 	return (
 		<div>
-			<h4 className="adviser-checklist-subtitle h4">{program}</h4>
+			<h1 className={`adviser-checklist-title ${styles['adviser-checklist-title']}`}>Program Checklist</h1>
+			<h4 className={`adviser-checklist-subtitle ${styles['adviser-checklist-subtitle']}`}>{program}</h4>
+			{/* Update Button */}
 			{isAdviser && (
 				<div className="text-end mt-4">
-					<button className="btn btn-secondary" onClick={() => setEditingCourse(null)}>
-						{editingCourse ? 'Cancel' : 'Update Record'}
+					<button className={`${styles['btn-update']}`} onClick={() => setIsUpdating(!isUpdating)}>
+						{isUpdating ? 'Done Updating' : 'Update Record'}
 					</button>
 				</div>
 			)}
@@ -298,12 +312,12 @@ export default function CourseChecklist({ program, isAdviser }) {
 					return yearA - yearB;
 				})
 				.map((year, index) => (
-					<div key={index} className="year-container">
-						<h2 className="year-title">{year}</h2>
-						<div className="semester-row">
+					<div key={index} className={styles['year-container']}>
+						<h2 className={styles['year-title']}>{year}</h2>
+						<div className={styles['semester-row']}>
 							{Object.keys(courseData[year])
 								.sort()
-								.map((semester, index) => renderSemester(semester, courseData[year][semester], index))}{' '}
+								.map((semester, index) => renderSemester(semester, courseData[year][semester], index))}
 						</div>
 					</div>
 				))}

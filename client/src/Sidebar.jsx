@@ -33,8 +33,8 @@ export default function Sidebar({ onNavItemClick }) {
 
 				{/* Advising Records Link */}
 				<li className="nav-item">
-					<button className="nav-link" onClick={() => onNavItemClick('Advising Records')}>
-						<img src={advisingRecordsIcon} alt="Advising Records" /> Advising Records
+					<button className="nav-link" onClick={() => onNavItemClick('Course Checklist')}>
+						<img src={advisingRecordsIcon} alt="Course Checklist" /> Course Checklist
 					</button>
 				</li>
 
