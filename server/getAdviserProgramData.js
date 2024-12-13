@@ -89,11 +89,20 @@ export async function getAdviserProgramData(adviserId) {
 			}))
 		);
 
+		// Query to fetch the count of all students in the same program as the adviser
+		const [[{ StudentCount }]] = await connection.query(
+			`SELECT COUNT(*) AS StudentCount
+                FROM Student
+                WHERE StudentProgram = ?`,
+			[adviser.Program]
+		);
+
 		// Prepare the response JSON
 		const response = {
-			AdviserName: `${adviser.AdviserFirstName} ${adviser.AdviserLastName}`,
-			Program: adviser.Program,
+			AdviserName: `${adviser.AdviserFirstName} ${adviser.AdviserLastName}`, // Full name of the adviser
+			Program: adviser.Program, // Advising program
 			StudentsForAdvising: studentsForAdvisingArray, // Include the 'For Advising' students
+			StudentsUnderAdvising: StudentCount, // Total students in the same program as the adviser
 		};
 
 		// Commit the transaction since everything succeeded
