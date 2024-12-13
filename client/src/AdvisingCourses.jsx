@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import styles from './StudentAdvising.module.css';
 
 export default function AdvisingCourses({ studentNumber }) {
 	const [courses, setCourses] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [isApproved, setIsApproved] = useState(false); // Flag to indicate approval status
+	const [remarks, setRemarks] = useState(''); // State to store the remarks text
 
 	useEffect(() => {
 		const fetchCourses = async () => {
@@ -14,7 +16,7 @@ export default function AdvisingCourses({ studentNumber }) {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 				const data = await response.json();
-				setCourses(data.CoursesForAdvising.map((course) => ({ ...course, isSaved: true })));
+				setCourses(data.CoursesForAdvising);
 			} catch (err) {
 				setError(err.message);
 			} finally {
@@ -55,46 +57,56 @@ export default function AdvisingCourses({ studentNumber }) {
 	}
 
 	return (
-		<div className="card shadow-sm card-list">
-			<div className="card-body">
-				{isApproved ? (
-					<h1 className="mb-0 text-success">Course List Approved Successfully</h1>
-				) : courses.length === 0 ? (
-					<h1 className="mb-0 text-muted">No Course to Approve</h1>
-				) : (
+		<div className={`col-5 ${styles['advising-container']}`}>
+			<div className={`card shadow-sm ${styles['card-list']}`}>
+				<div className={styles[`card-body`]}>
 					<h1 className="mb-0">Course List for Advising</h1>
-				)}
 
-				{courses.length > 0 && ( // Only display table and button if there are courses
-					<>
-						<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-							<table className="table table-hover align-middle">
-								<thead>
-									<tr>
-										<th scope="col">Course</th>
-										<th scope="col">Course Type</th>
-										<th scope="col">Units</th>
+					{/* Advising Table */}
+					<div className={`${styles['checklist-table']} table-responsive mt-4`}>
+						<table className="table table-hover align-middle">
+							<thead>
+								<tr>
+									<th scope="col">Course</th>
+									<th scope="col">Course Type</th>
+									<th scope="col">Units</th>
+								</tr>
+							</thead>
+							<tbody>
+								{courses.map((course, index) => (
+									<tr key={index}>
+										<td>{course.CourseId}</td>
+										<td>{course.CourseType}</td>
+										<td>{course.Units}</td>
 									</tr>
-								</thead>
-								<tbody>
-									{courses.map((course) => (
-										<tr key={course.CourseId}>
-											<td>{course.CourseId}</td>
-											<td>{course.CourseType}</td>
-											<td>{course.Units}</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
+								))}
+							</tbody>
+						</table>
 						<p className="text-end">TOTAL UNITS: {courses.reduce((total, course) => total + (course.Units || 0), 0)}</p>
-					</>
-				)}
+					</div>
 
-				<div className="advising-buttons d-flex gap-2 mt-4">
-					<button className="btn btn-primary flex-grow-1" disabled={isApproved || courses.length === 0} onClick={handleApprove}>
-						{isApproved ? 'Approved' : 'Approve'}
-					</button>
+					{/* Remarks Section */}
+					<div className={`${styles['advising-remarks']} mb-3`}>
+						<h2>Advising Remarks</h2>
+						<textarea
+							className={`${styles['fixed-size']} form-control txt-size`}
+							id="advising-remarks"
+							placeholder="Enter Advising Notes/Remarks here..."
+							value={remarks}
+							onChange={(e) => setRemarks(e.target.value)} // Update remarks state on input change
+						></textarea>
+					</div>
+
+					{/* Buttons */}
+					<div className={`${styles['advising-buttons']} d-flex gap-2`}>
+						<button
+							className={`btn ${styles['btn-primary']} flex-grow-1`}
+							disabled={isApproved || courses.length === 0}
+							onClick={handleApprove}
+						>
+							{isApproved ? 'Approved' : 'Approve Course List'}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

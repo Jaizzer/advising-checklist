@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import styles from './StudentAdvising.module.css';
+
 export default function SemestralRecords({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -35,7 +37,7 @@ export default function SemestralRecords({ studentNumber }) {
 		return <div>No student data found.</div>;
 	}
 
-	const { CoursesTaken, CourseChecklist } = studentData;
+	const { CoursesTaken } = studentData;
 
 	const groupCoursesByYearAndSemester = (courses) => {
 		const grouped = {};
@@ -53,56 +55,43 @@ export default function SemestralRecords({ studentNumber }) {
 		return grouped;
 	};
 
-	const getCourseStatus = (course) => {
-		if (course.Grade === "Not Available") {
-			return 'On Going';
-		} else if (course.Grade === 4.0) {
-			return 'INC';
-		} else if (course.Grade <= 3.0) {
-			return 'Passed';
-		} else {
-			return 'Failed';
-		}
-	};
-
 	const renderSemester = (semester, courses) => {
 		const totalUnits = courses.reduce((sum, course) => sum + course.Units, 0);
 		return (
-			<div className="semester" key={semester}>
-				{' '}
-				{/* Added key prop */}
-				<div className="semester-header">
-					<h3 className="semester-title">{semester}</h3>
-					<p className="total-units">Total Units: {totalUnits}</p>
-				</div>
-				<div className="semester-table-container">
-					<table className="semester-table">
-						<thead>
-							<tr>
-								<th>Course Name</th>
-								<th>Course Type</th>
-								<th>Units</th>
-								<th>Status</th>
-								<th>Grade</th>
-							</tr>
-						</thead>
-						<tbody>
-							{courses.map((course, index) => {
-								return (
-									<tr key={`${semester}-${index}`}>
-										{' '}
-										{/* Key for each course row */}
-										<td>{course.CourseId}</td>
-										<td>{course.CourseType}</td>
-										<td>{course.Units}</td>
-										<td>{getCourseStatus(course)}</td>
-										<td>{course.Grade !== 'Not Available' ? course.Grade.toFixed(2) : '-'}</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
+			<div key={semester} className={`${styles['checklist-table']} table-responsive mt-4`}>
+				<table className="table table-hover align-middle">
+					<thead>
+						<tr>
+							<th colSpan="7" className={`text-start ${styles['sem-label']}`}>
+								{semester}
+							</th>
+						</tr>
+						<tr>
+							<th scope="col">Course</th>
+							<th scope="col">Course Type</th>
+							<th scope="col">Units</th>
+							<th scope="col">Grade</th>
+							<th scope="col">Semester Taken</th>
+							<th scope="col">A.Y Taken</th>
+						</tr>
+					</thead>
+					<tbody>
+						{courses.map((course, index) => {
+							const { CourseId, CourseType, Units, Grade, PrescribedSemester, AcademicYearTaken } = course;
+							return (
+								<tr key={index}>
+									<td>{CourseId}</td>
+									<td>{CourseType}</td>
+									<td>{Units}</td>
+									<td>{Grade}</td>
+									<td>{PrescribedSemester}</td>
+									<td>{AcademicYearTaken}</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
+				<p className="text-end">TOTAL UNITS: {totalUnits}</p>
 			</div>
 		);
 	};
@@ -110,21 +99,21 @@ export default function SemestralRecords({ studentNumber }) {
 	const groupedCoursesTaken = groupCoursesByYearAndSemester(CoursesTaken);
 
 	return (
-		<>
-			{Object.keys(groupedCoursesTaken)
-				.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
-				.map((year) => (
-					<div className="year-container" key={year}>
-						{' '}
-						{/* Added key prop */}
-						<h2 className="year-title">{year}</h2>
-						<div className="semester-row">
-							{Object.keys(groupedCoursesTaken[year])
-								.sort((a, b) => a.localeCompare(b))
-								.map((semester) => renderSemester(semester, groupedCoursesTaken[year][semester]))}
-						</div>
-					</div>
-				))}
-		</>
+		<div className={`col-7 ${styles['advising-container']}`}>
+			<div className={`card shadow-sm ${styles['card-checklist']}`}>
+				<div className="card-body">
+					{/* Render courses grouped by year and semester */}
+					{Object.keys(groupedCoursesTaken)
+						.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
+						.map((year) => (
+							<div key={year}>
+								{Object.keys(groupedCoursesTaken[year])
+									.sort((a, b) => a.localeCompare(b))
+									.map((semester) => renderSemester(semester, groupedCoursesTaken[year][semester]))}
+							</div>
+						))}
+				</div>
+			</div>
+		</div>
 	);
 }
