@@ -9,6 +9,7 @@ import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken
 import insertStudentCourseListItems from './insertStudentCourseListItems.js';
 import deleteStudentCourseListItem from './deleteStudentCourseListItem.js';
 import { getAdviserProgramData } from './getAdviserProgramData.js';
+import { getCourseChecklist } from './getCourseChecklist.js';
 
 // Initialize an Express application
 const app = express();
@@ -254,6 +255,27 @@ app.get('/adviser/:adviserId', async (req, res) => {
 		res.status(500).json({
 			success: false,
 			message: 'An error occurred while fetching adviser program data.',
+			error: error.message,
+		});
+	}
+});
+
+// Define the route to fetch the course checklist based on the given program
+app.get('/courseChecklist/:program', async (req, res) => {
+	const program = req.params.program; // Retrieve the program parameter from the URL
+
+	try {
+		// Call the getCourseChecklist function to fetch course data for the given program
+		const courseChecklist = await getCourseChecklist(program);
+
+		// Respond with the course checklist data
+		res.status(200).json(courseChecklist);
+	} catch (error) {
+		// Handle errors and send an error response
+		console.error('Error in /courseChecklist:', error.message);
+		res.status(500).json({
+			success: false,
+			message: 'An error occurred while fetching the course checklist.',
 			error: error.message,
 		});
 	}
