@@ -1,10 +1,10 @@
 import pool from './database.js';
 
-// Function to fetch student dashboard data with transaction handling
+// Function to fetch student dashboard data with transaction handling and academic year/semester taken
 export async function getStudentDashboardData(studentNumber) {
 	// Ensure studentNumber is provided before proceeding
 	if (!studentNumber) {
-		throw new Error('Student number is required.'); // Throw error if no student number is provided
+		throw new Error('Student number is required.');
 	}
 
 	// Establish a connection to the database from the connection pool
@@ -16,18 +16,18 @@ export async function getStudentDashboardData(studentNumber) {
 
 		// Query to fetch student details, adviser information, and current standing
 		const [studentResult] = await connection.query(
-			`SELECT 
-				s.StudentNumber, 
-				s.StudentProgram, 
-				s.S_FirstName, 
-				s.S_MiddleName, 
-				s.S_LastName, 
-				a.A_FirstName AS AdviserFirstName, 
-				a.A_LastName AS AdviserLastName,
-				s.CurrentStanding  -- Include the student's current standing
-			FROM Student s
-			LEFT JOIN Adviser a ON s.AdviserID = a.AdviserID
-			WHERE s.StudentNumber = ?`,
+			`SELECT
+        s.StudentNumber,
+        s.StudentProgram,
+        s.S_FirstName,
+        s.S_MiddleName,
+        s.S_LastName,
+        a.A_FirstName AS AdviserFirstName,
+        a.A_LastName AS AdviserLastName,
+        s.CurrentStanding
+      FROM Student s
+      LEFT JOIN Adviser a ON s.AdviserID = a.AdviserID
+      WHERE s.StudentNumber = ?`,
 			[studentNumber]
 		);
 
@@ -39,20 +39,22 @@ export async function getStudentDashboardData(studentNumber) {
 
 		const student = studentResult[0];
 
-		// Get the list of all courses that the student has taken, including grades
+		// Get the list of all courses that the student has taken, including grades, academic year, and semester taken
 		const [courseResult] = await connection.query(
-			`SELECT 
-				c.CourseId, 
-				pc.CourseType, 
-				c.Units, 
-				pc.PrescribedYear, 
-				pc.PrescribedSemester,
-				scl.Grade
-			FROM Course c
-			JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
-			JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = c.CourseId
-			WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-			ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
+			`SELECT
+        c.CourseId,
+        pc.CourseType,
+        c.Units,
+        pc.PrescribedYear,
+        pc.PrescribedSemester,
+        scl.Grade,
+        scl.AcademicYear,
+        scl.Semester
+      FROM Course c
+      JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
+      JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = c.CourseId
+      WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
+      ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
 			[studentNumber, studentNumber]
 		);
 
@@ -69,25 +71,26 @@ export async function getStudentDashboardData(studentNumber) {
 			Units: course.Units,
 			PrescribedYear: course.PrescribedYear,
 			PrescribedSemester: course.PrescribedSemester,
-			Grade: course.Grade || 'Not Available', // Grade is optional
+			Grade: course.Grade || 'Not Available',
+			AcademicYearTaken: course.AcademicYear,
+			SemesterTaken: course.Semester,
 		}));
 
 		// Get the full course checklist based on the student's program and current standing
-		// Exclude courses with PrescribedYear = 'None' and PrescribedSemester = 'None'
 		const [courseChecklistResult] = await connection.query(
-			`SELECT 
-                c.CourseId, 
-                pc.CourseType, 
-                c.Units, 
-                pc.PrescribedYear, 
-                pc.PrescribedSemester
-            FROM Course c
-            JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
-            WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-            AND pc.PrescribedYear <= (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)
-            AND pc.PrescribedYear != 'None'  -- Exclude courses with PrescribedYear = 'None'
-            AND pc.PrescribedSemester != 'None'  -- Exclude courses with PrescribedSemester = 'None'
-            ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
+			`SELECT
+        c.CourseId,
+        pc.CourseType,
+        c.Units,
+        pc.PrescribedYear,
+        pc.PrescribedSemester
+      FROM Course c
+      JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
+      WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
+      AND pc.PrescribedYear <= (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)
+      AND pc.PrescribedYear != 'None' 
+      AND pc.PrescribedSemester != 'None'
+      ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
 			[studentNumber, studentNumber]
 		);
 
@@ -109,7 +112,7 @@ export async function getStudentDashboardData(studentNumber) {
 			StudentNumber: student.StudentNumber,
 			StudentProgram: student.StudentProgram,
 			AdviserName: `${student.AdviserFirstName} ${student.AdviserLastName}`,
-			CurrentStanding: student.CurrentStanding, // Include the current standing
+			CurrentStanding: student.CurrentStanding,
 			CoursesTaken: courses,
 			CourseChecklist: courseChecklist,
 		};
