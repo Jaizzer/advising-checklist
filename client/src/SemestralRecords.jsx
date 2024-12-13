@@ -54,8 +54,8 @@ export default function SemestralRecords({ studentNumber }) {
 	};
 
 	const getCourseStatus = (course) => {
-		if (course.Grade === null) {
-			return 'Enrolled';
+		if (course.Grade === "Not Available") {
+			return 'On Going';
 		} else if (course.Grade === 4.0) {
 			return 'INC';
 		} else if (course.Grade <= 3.0) {
@@ -87,17 +87,19 @@ export default function SemestralRecords({ studentNumber }) {
 							</tr>
 						</thead>
 						<tbody>
-							{courses.map((course, index) => (
-								<tr key={`${semester}-${index}`}>
-									{' '}
-									{/* Key for each course row */}
-									<td>{course.CourseId}</td>
-									<td>{course.CourseType}</td>
-									<td>{course.Units}</td>
-									<td>{getCourseStatus(course)}</td>
-									<td>{course.Grade ? course.Grade.toFixed(2) : '-'}</td>
-								</tr>
-							))}
+							{courses.map((course, index) => {
+								return (
+									<tr key={`${semester}-${index}`}>
+										{' '}
+										{/* Key for each course row */}
+										<td>{course.CourseId}</td>
+										<td>{course.CourseType}</td>
+										<td>{course.Units}</td>
+										<td>{getCourseStatus(course)}</td>
+										<td>{course.Grade !== 'Not Available' ? course.Grade.toFixed(2) : '-'}</td>
+									</tr>
+								);
+							})}
 						</tbody>
 					</table>
 				</div>
