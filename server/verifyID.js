@@ -5,24 +5,54 @@ async function verifyID(id) {
 
 	try {
 		// Check if the ID exists in the Adviser table
-		const [result1] = await connection.query('SELECT AdviserID FROM Adviser WHERE AdviserID = ?', [id]);
+		const [adviserResult] = await connection.query(
+			`SELECT 
+				AdviserID AS id, 
+				CONCAT(A_FirstName, ' ', A_LastName) AS name, 
+				AdvisingProgram AS program 
+			FROM Adviser 
+			WHERE AdviserID = ?`,
+			[id]
+		);
 
-		if (result1.length > 0) {
-			return 'Adviser';
+		if (adviserResult.length > 0) {
+			// Return adviser details
+			const { id, name, program } = adviserResult[0];
+			return {
+				id,
+				name,
+				position: 'Adviser',
+				program,
+			};
 		}
 
 		// Check if the ID exists in the Student table
-		const [result2] = await connection.query('SELECT StudentNumber FROM Student WHERE StudentNumber = ?', [id]);
+		const [studentResult] = await connection.query(
+			`SELECT 
+				StudentNumber AS id, 
+				CONCAT(S_FirstName, ' ', S_LastName) AS name, 
+				StudentProgram AS program 
+			FROM Student 
+			WHERE StudentNumber = ?`,
+			[id]
+		);
 
-		if (result2.length > 0) {
-			return 'Student';
+		if (studentResult.length > 0) {
+			// Return student details
+			const { id, name, program } = studentResult[0];
+			return {
+				id,
+				name,
+				position: 'Student',
+				program,
+			};
 		}
 
 		// If the ID doesn't match either table
-		return 'Invalid ID';
+		return { error: 'Invalid ID' };
 	} catch (error) {
 		console.error('Error verifying ID:', error);
-		return 'Error verifying ID';
+		return { error: 'Error verifying ID' };
 	} finally {
 		connection.release();
 	}
