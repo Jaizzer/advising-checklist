@@ -4,23 +4,19 @@ export default function CourseChecklist({ program, isAdviser }) {
 	const [courseData, setCourseData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [editingCourse, setEditingCourse] = useState(null);
+	const [editedValues, setEditedValues] = useState({});
 
 	useEffect(() => {
 		const fetchCourseData = async () => {
 			try {
-				// Encode the program to handle spaces or special characters
 				const encodedProgram = encodeURIComponent(program);
-
-				// Make the fetch request with the encoded program name
 				const response = await fetch(`http://localhost:9090/courseChecklist/${encodedProgram}`);
 				if (!response.ok) {
 					throw new Error('Failed to fetch course data');
 				}
 				const data = await response.json();
-
-				// Group courses by PrescribedYear and PrescribedSemester
 				const groupedData = groupCoursesByYearAndSemester(data);
-
 				setCourseData(groupedData);
 			} catch (err) {
 				setError(err.message);
@@ -32,29 +28,161 @@ export default function CourseChecklist({ program, isAdviser }) {
 		fetchCourseData();
 	}, [program]);
 
-	// Function to group courses by PrescribedYear and PrescribedSemester
 	const groupCoursesByYearAndSemester = (courses) => {
 		const grouped = {};
-
 		courses.forEach((course) => {
-			// Ensure that the year and semester values are valid and formatted correctly
 			const year = course.PrescribedYear || 'No Year';
 			const semester = course.PrescribedSemester || 'No Semester';
-
-			// Initialize the year and semester in the grouped object if not present
 			if (!grouped[year]) {
 				grouped[year] = {};
 			}
-
 			if (!grouped[year][semester]) {
 				grouped[year][semester] = [];
 			}
-
-			// Push the course into the appropriate year/semester group
 			grouped[year][semester].push(course);
 		});
-
 		return grouped;
+	};
+
+	const handleDelete = async (courseId) => {
+		try {
+			const response = await fetch('http://localhost:9090/deleteCourseFromProgramChecklist', {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ courseId, program: program }), // Send studentProgram in the request body
+			});
+
+			if (!response.ok) {
+				throw new Error('Failed to delete course');
+			}
+
+			// Update courseData by filtering out the deleted course
+			setCourseData((prevCourseData) => {
+				const updatedCourseData = { ...prevCourseData };
+				for (const year in updatedCourseData) {
+					for (const semester in updatedCourseData[year]) {
+						updatedCourseData[year][semester] = updatedCourseData[year][semester].filter((course) => course.CourseId !== courseId);
+					}
+				}
+				return updatedCourseData;
+			});
+		} catch (error) {
+			console.error('Error deleting course:', error);
+			// Handle the error, e.g., display an error message to the user
+		}
+	};
+
+	const handleEdit = (courseId) => {
+		setEditingCourse(courseId);
+		const originalCourse = getCourseById(courseId);
+		setEditedValues({
+			[courseId]: {
+				CourseId: originalCourse.CourseId,
+				CourseType: originalCourse.CourseType,
+				Units: originalCourse.Units,
+			},
+		});
+	};
+
+	const handleSaveChanges = async (courseId) => {
+		try {
+			// Prepare request body with current and edited values
+			const requestBody = {
+				currentCourseID: courseId,
+				updatedCourseData: {
+					CourseID: editedValues[courseId].CourseId,
+					Units: editedValues[courseId].Units,
+					CourseType: editedValues[courseId].CourseType,
+				},
+				studentProgram: program,
+			};
+
+			// Send POST request to edit the course
+			const response = await fetch('http://localhost:9090/editCourseFromProgramChecklist', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(requestBody),
+			});
+
+			if (!response.ok) {
+				throw new Error(`Failed to edit course: ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			if (data.success) {
+				console.log('Course edited successfully:', data.message);
+
+				// Update courseData locally after successful server-side edit
+				setCourseData((prevCourseData) => {
+					const updatedCourseData = { ...prevCourseData };
+					for (const year in updatedCourseData) {
+						for (const semester in updatedCourseData[year]) {
+							const courseIndex = updatedCourseData[year][semester].findIndex((course) => course.CourseId === courseId);
+							if (courseIndex !== -1) {
+								updatedCourseData[year][semester][courseIndex] = {
+									...updatedCourseData[year][semester][courseIndex],
+									CourseId: editedValues[courseId].CourseId,
+									Units: editedValues[courseId].Units,
+									CourseType: editedValues[courseId].CourseType,
+								};
+							}
+						}
+					}
+					return updatedCourseData;
+				});
+			} else {
+				console.error('Error editing course:', data.error);
+				// Display error message to the user (e.g., using a modal or alert)
+				alert(`Error editing course: ${data.error}`);
+			}
+
+			// Reset editing state
+			setEditingCourse(null);
+			setEditedValues({});
+		} catch (error) {
+			console.error('Error editing course:', error);
+			// Handle unexpected errors (e.g., display error message to the user)
+			alert('An unexpected error occurred while editing the course.');
+		}
+	};
+
+	const handleInputChange = (e, courseId, field) => {
+		const { value } = e.target;
+		setEditedValues((prevValues) => ({
+			...prevValues,
+			[courseId]: {
+				...prevValues[courseId],
+				[field]: field === 'Units' ? Number(value) : value,
+			},
+		}));
+	};
+
+	const getCourseById = (courseId) => {
+		for (const year in courseData) {
+			for (const semester in courseData[year]) {
+				const course = courseData[year][semester].find((course) => course.CourseId === courseId);
+				if (course) {
+					return course;
+				}
+			}
+		}
+		return null;
+	};
+
+	const isCourseEdited = (courseId) => {
+		const originalCourse = getCourseById(courseId);
+		const editedCourse = editedValues[courseId];
+		return (
+			editedCourse &&
+			(editedCourse.CourseId !== originalCourse.CourseId ||
+				editedCourse.CourseType !== originalCourse.CourseType ||
+				editedCourse.Units !== originalCourse.Units)
+		);
 	};
 
 	if (isLoading) {
@@ -65,10 +193,8 @@ export default function CourseChecklist({ program, isAdviser }) {
 		return <div>Error: {error}</div>;
 	}
 
-	// Render the course list for each semester and year
 	const renderSemester = (semester, courses) => {
 		const totalUnits = courses.reduce((sum, course) => sum + (course.Units || 0), 0);
-
 		return (
 			<div className="semester">
 				<div className="semester-header">
@@ -82,14 +208,70 @@ export default function CourseChecklist({ program, isAdviser }) {
 								<th>Course Name</th>
 								<th>Course Type</th>
 								<th>Units</th>
+								{isAdviser && <th>Actions</th>}
 							</tr>
 						</thead>
 						<tbody>
 							{courses.map((course, index) => (
 								<tr key={index}>
-									<td>{course.CourseId}</td>
-									<td>{course.CourseType}</td>
-									<td>{course.Units || 'N/A'}</td> {/* Display the units */}
+									<td>
+										{editingCourse === course.CourseId ? (
+											<input
+												type="text"
+												value={editedValues[course.CourseId]?.CourseId || course.CourseId}
+												onChange={(e) => handleInputChange(e, course.CourseId, 'CourseId')}
+											/>
+										) : (
+											course.CourseId
+										)}
+									</td>
+									<td>
+										{editingCourse === course.CourseId ? (
+											<select
+												value={editedValues[course.CourseId]?.CourseType || course.CourseType}
+												onChange={(e) => handleInputChange(e, course.CourseId, 'CourseType')}
+											>
+												<option value="Major">Major</option>
+												<option value="Foundation">Foundation</option>
+												<option value="Other">Other</option>
+												<option value="Qualified Elective">Qualified Elective</option>
+												<option value="GE Requirement">GE Requirement</option>
+											</select>
+										) : (
+											course.CourseType
+										)}
+									</td>
+									<td>
+										{editingCourse === course.CourseId ? (
+											<input
+												type="number"
+												value={editedValues[course.CourseId]?.Units || course.Units || ''}
+												onChange={(e) => handleInputChange(e, course.CourseId, 'Units')}
+											/>
+										) : (
+											course.Units || 'N/A'
+										)}
+									</td>
+									{isAdviser && (
+										<td>
+											{editingCourse === course.CourseId ? (
+												<button
+													className="btn btn-sm btn-success"
+													onClick={() => handleSaveChanges(course.CourseId)}
+													disabled={!isCourseEdited(course.CourseId)}
+												>
+													Save Changes
+												</button>
+											) : (
+												<button className="btn btn-sm btn-primary" onClick={() => handleEdit(course.CourseId)}>
+													Edit
+												</button>
+											)}
+											<button className="btn btn-sm btn-danger" onClick={() => handleDelete(course.CourseId)}>
+												Delete
+											</button>
+										</td>
+									)}
 								</tr>
 							))}
 						</tbody>
@@ -102,11 +284,15 @@ export default function CourseChecklist({ program, isAdviser }) {
 	return (
 		<div>
 			<h4 className="adviser-checklist-subtitle h4">{program}</h4>
-
-			{/* Iterate through each year in the grouped course data, sorted numerically */}
+			{isAdviser && (
+				<div className="text-end mt-4">
+					<button className="btn btn-secondary" onClick={() => setEditingCourse(null)}>
+						{editingCourse ? 'Cancel' : 'Update Record'}
+					</button>
+				</div>
+			)}
 			{Object.keys(courseData)
 				.sort((a, b) => {
-					// Sort years numerically, assuming years are in the format 'Year 1', 'Year 2', etc.
 					const yearA = parseInt(a.split(' ')[1]);
 					const yearB = parseInt(b.split(' ')[1]);
 					return yearA - yearB;
@@ -115,18 +301,10 @@ export default function CourseChecklist({ program, isAdviser }) {
 					<div key={index} className="year-container">
 						<h2 className="year-title">{year}</h2>
 						<div className="semester-row">
-							{/* Iterate through each semester in the year */}
 							{Object.keys(courseData[year]).map((semester, index) => renderSemester(semester, courseData[year][semester], index))}
 						</div>
 					</div>
 				))}
-
-			{/* Conditionally render Update Record button based on isAdviser prop */}
-			{isAdviser && (
-				<div className="text-end mt-4">
-					<button className="btn update">Update Record</button>
-				</div>
-			)}
 		</div>
 	);
 }
