@@ -1,16 +1,17 @@
 import { useState } from 'react';
+import styles from './AddCourseForm.module.css'; // Import the CSS module
 
-function AddCourseForm({ StudentProgram }) {
+function AddCourseForm({ StudentProgram, setIsAdding }) {
 	const [formData, setFormData] = useState({
 		CourseID: '',
 		CourseDescription: '',
-		Units: '',
+		Units: 1, // Default to 1
 		CourseComponents: '',
 		College: 'College of Science',
 		Department: '',
 		GradingBasis: '',
-		Prerequisites: [],
-		Corequisites: [],
+		Prerequisites: '',
+		Corequisites: '',
 		CourseType: '',
 		PrescribedYear: '',
 		PrescribedSemester: '',
@@ -30,7 +31,6 @@ function AddCourseForm({ StudentProgram }) {
 		const courseData = { ...formData };
 
 		try {
-			// Send the course data including the StudentProgram field
 			const response = await fetch('http://localhost:9090/addCourse', {
 				method: 'POST',
 				headers: {
@@ -53,28 +53,31 @@ function AddCourseForm({ StudentProgram }) {
 	}
 
 	return (
-		<div className="add-course-section">
-			<h1 className="title_page h1 fw-bold">Add Course</h1>
-			<form className="add-course-form" onSubmit={handleSubmit}>
-				<div className="form-grid">
+		<div className={styles['container-content']}>
+			{/* Back to Courses Button */}
+
+			<h1 className={styles['title_page']}>Add Course</h1>
+			<form className={styles['add-course-form']} onSubmit={handleSubmit}>
+				<div className={styles['form-grid']}>
 					{/* Row 1 */}
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="CourseID">Course ID</label>
-						<input type="text" id="CourseID" placeholder="Enter text" value={formData.CourseID} onChange={handleChange} />
+						<input type="text" id="CourseID" placeholder="Enter Course ID" value={formData.CourseID} onChange={handleChange} required />
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="CourseDescription">Course Description</label>
 						<input
 							type="text"
 							id="CourseDescription"
-							placeholder="Enter text"
+							placeholder="Enter Course Description"
 							value={formData.CourseDescription}
 							onChange={handleChange}
+							required
 						/>
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="CourseType">Course Type</label>
-						<select id="CourseType" value={formData.CourseType} onChange={handleChange}>
+						<select id="CourseType" value={formData.CourseType} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Major">Major</option>
 							<option value="GE Requirement">GE Requirement</option>
@@ -85,45 +88,45 @@ function AddCourseForm({ StudentProgram }) {
 					</div>
 
 					{/* Row 2 */}
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="Units">Units</label>
-						<input type="number" id="Units" placeholder="Enter number" value={formData.Units} onChange={handleChange} />
+						<input type="number" id="Units" placeholder="Enter number" value={formData.Units} onChange={handleChange} min="1" required />
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="CourseComponents">Course Components</label>
-						<select id="CourseComponents" value={formData.CourseComponents} onChange={handleChange}>
+						<select id="CourseComponents" value={formData.CourseComponents} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Lab">Lab</option>
 							<option value="Lecture">Lecture</option>
 						</select>
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="College">College</label>
-						<select id="College" value={formData.College} onChange={handleChange}>
+						<select id="College" value={formData.College} onChange={handleChange} required>
 							<option value="College of Science">College of Science</option>
 						</select>
 					</div>
 
 					{/* Row 3 */}
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="Department">Department</label>
-						<select id="Department" value={formData.Department} onChange={handleChange}>
+						<select id="Department" value={formData.Department} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Math">Math</option>
 							<option value="Computer Science">Computer Science</option>
 						</select>
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="GradingBasis">Grading Basis</label>
-						<select id="GradingBasis" value={formData.GradingBasis} onChange={handleChange}>
+						<select id="GradingBasis" value={formData.GradingBasis} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Letter">Letter</option>
 							<option value="Numerical">Numerical</option>
 						</select>
 					</div>
-					<div className="form-group">
-						<label htmlFor="PrescribedYear">Prescribed Year</label>
-						<select id="PrescribedYear" value={formData.PrescribedYear} onChange={handleChange}>
+					<div className={styles['form-group']}>
+						<label htmlFor="PrescribedYear">Year</label>
+						<select id="PrescribedYear" value={formData.PrescribedYear} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Year 1">Year 1</option>
 							<option value="Year 2">Year 2</option>
@@ -133,30 +136,45 @@ function AddCourseForm({ StudentProgram }) {
 					</div>
 
 					{/* Row 4 */}
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="Prerequisites">Prerequisites</label>
-						<select id="Prerequisites" value={formData.Prerequisites} onChange={handleChange}>
-							<option value="">Select option</option>
-						</select>
+						<input
+							type="text"
+							id="Prerequisites"
+							placeholder="Enter Prerequisites (comma separated)"
+							value={formData.Prerequisites}
+							onChange={handleChange}
+						/>
 					</div>
-					<div className="form-group">
-						<label htmlFor="PrescribedSemester">Prescribed Semester</label>
-						<select id="PrescribedSemester" value={formData.PrescribedSemester} onChange={handleChange}>
+					<div className={styles['form-group']}>
+						<label htmlFor="PrescribedSemester">Semester</label>
+						<select id="PrescribedSemester" value={formData.PrescribedSemester} onChange={handleChange} required>
 							<option value="">Select option</option>
 							<option value="Semester 1">Semester 1</option>
 							<option value="Semester 2">Semester 2</option>
 						</select>
 					</div>
-					<div className="form-group">
+					<div className={styles['form-group']}>
 						<label htmlFor="Corequisites">Corequisites</label>
-						<select id="Corequisites" value={formData.Corequisites} onChange={handleChange}>
-							<option value="">Select option</option>
-						</select>
+						<input
+							type="text"
+							id="Corequisites"
+							placeholder="Enter Corequisites (comma separated)"
+							value={formData.Corequisites}
+							onChange={handleChange}
+						/>
 					</div>
 				</div>
-				<div className="button-container text-end mt-4">
-					<button type="submit" className="btn">
+
+				<div className={styles['button-container']}>
+					<button type="submit" className={styles['add-course-button']}>
 						Add Course
+					</button>
+					<button
+						className={styles['back-to-courses-button']}
+						onClick={() => setIsAdding(false)} // Calls the passed function to stop adding a course
+					>
+						Back to Courses
 					</button>
 				</div>
 			</form>

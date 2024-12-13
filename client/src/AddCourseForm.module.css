@@ -1,0 +1,126 @@
+General Body Styling body {
+	font-family: 'Arial', sans-serif;
+	background-color: #f8f9fa;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh; /* Full viewport height for vertical centering */
+}
+
+.container-content {
+	padding: 2rem;
+	background-color: #fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	width: 80%; /* Adjust width as needed */
+	max-width: 1200px; /* Limit maximum width */
+}
+
+/* Page Title Styling */
+h1.title_page {
+	color: #801338;
+	font-weight: bold;
+	text-transform: uppercase;
+	margin-bottom: 2rem;
+	font-size: 2rem;
+	text-align: center;
+}
+
+/* Form Styling */
+.add-course-form {
+	background: #ffffff;
+	border: 1px solid #e0e0e0;
+	border-radius: 10px;
+	padding: 2rem;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.add-course-form .form-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr); /* 3 columns */
+	grid-template-rows: repeat(3, auto); /* 4 rows */
+	gap: 1.5rem; /* Space between grid items */
+}
+
+form .form-group {
+	margin-bottom: 0;
+}
+
+form label {
+	font-weight: 500;
+	color: #801338;
+	margin-bottom: 0.5rem;
+	display: block;
+}
+
+form input,
+form select {
+	display: block;
+	width: 100%;
+	padding: 0.75rem;
+	font-size: 1rem;
+	border: 1px solid #801338;
+	border-radius: 5px;
+}
+
+.button-container {
+	display: flex;
+	justify-content: flex-end; /* Align button to the right */
+	margin-top: 1.5rem;
+    gap: 10px;
+}
+
+form .btn {
+	background-color: #801338;
+	color: #fff;
+	padding: 0.5rem 1.5rem; /* Smaller button size */
+	font-size: 0.875rem;
+	border-radius: 5px;
+	text-align: center;
+	transition: 0.3s ease;
+}
+
+form .btn:hover {
+	background-color: #650d2a;
+	cursor: pointer;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+	.add-course-form .form-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.add-course-button {
+	background-color: #801338;
+	color: #fff;
+	padding: 0.5rem 1.5rem; /* Smaller button size */
+	font-size: 0.875rem;
+	border-radius: 5px;
+	text-align: center;
+	transition: 0.3s ease;
+}
+
+.add-course-button:hover {
+	background-color: #650d2a;
+	cursor: pointer;
+}
+
+.back-to-courses-button {
+	background-color: #828282;
+	border: 1px solid #828282;
+	color: #fff;
+	padding: 0.5rem 1.5rem; /* Smaller button size */
+	font-size: 0.875rem;
+	border-radius: 5px;
+	text-align: center;
+	transition: 0.3s ease;
+}
+
+.back-to-courses-button:hover {
+	background-color: #6c6c6c;
+	cursor: pointer;
+}
