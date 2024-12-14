@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styles from './SemestralRecords.module.css'; // Import the CSS module
 
 export default function SemestralRecords({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);
@@ -65,38 +66,38 @@ export default function SemestralRecords({ studentNumber }) {
 	const renderSemester = (year, semester, courses) => {
 		const totalUnits = courses.reduce((sum, course) => sum + course.Units, 0);
 		return (
-			<div key={`${year}-${semester}`} className="table-responsive mt-4">
-				<table className="table table-hover align-middle">
-					<thead>
-						<tr>
-							<th colSpan="8" className="text-start sem-label">
-								{`${year} - ${semester}`}
-							</th>
-						</tr>
-						<tr>
-							<th scope="col">Course</th>
-							<th scope="col">Course Type</th>
-							<th scope="col">Units</th>
-							<th scope="col">Grade</th>
-							<th scope="col">Status</th>
-						</tr>
-					</thead>
-					<tbody>
-						{courses.map((course, index) => {
-							const { CourseId, CourseType, Units, Grade, PrescribedSemester, AcademicYearTaken } = course;
-							return (
-								<tr key={index}>
-									<td>{CourseId}</td>
-									<td>{CourseType}</td>
-									<td>{Units}</td>
-									<td>{Grade}</td>
-									<td>{getStatus(Grade)}</td>
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>
-				<p className="text-end">TOTAL UNITS: {totalUnits}</p>
+			<div key={`${year}-${semester}`} className={styles.semester}>
+				<div className={styles['semester-header']}>
+					<h3 className={styles['semester-title']}>{`${year} - ${semester}`}</h3>
+					<p className={styles['total-units']}>Total Units: {totalUnits}</p>
+				</div>
+				<div className={styles['semester-table-container']}>
+					<table className={styles['semester-table']}>
+						<thead>
+							<tr>
+								<th>Course Name</th>
+								<th>Course Type</th>
+								<th>Units</th>
+								<th>Grade</th>
+								<th>Status</th>
+							</tr>
+						</thead>
+						<tbody>
+							{courses.map((course, index) => {
+								const { CourseId, CourseType, Units, Grade } = course;
+								return (
+									<tr key={index}>
+										<td>{CourseId}</td>
+										<td>{CourseType}</td>
+										<td>{Units}</td>
+										<td>{Grade}</td>
+										<td>{getStatus(Grade)}</td>
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+				</div>
 			</div>
 		);
 	};
@@ -104,26 +105,50 @@ export default function SemestralRecords({ studentNumber }) {
 	const groupedCoursesTaken = groupCoursesByYearAndSemester(CoursesTaken);
 
 	return (
-		<div className="advising-container">
-			<div className="card shadow-sm card-checklist">
-				<div className="card-body">
-					{/* Render courses grouped by year and semester */}
-					{Object.keys(groupedCoursesTaken)
-						.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
-						.map((year) => (
-							<div key={year}>
-								<div className="year-container">
-									<h2 className="year-title">{year}</h2>
-								</div>
-								<div className="semester-row">
-									{Object.keys(groupedCoursesTaken[year])
-										.sort((a, b) => a.localeCompare(b))
-										.map((semester) => renderSemester(year, semester, groupedCoursesTaken[year][semester]))}
-								</div>
-							</div>
-						))}
+		<div className={styles['container-content']}>
+			<h1 className={`${styles['title_page']} ${styles['h1']} ${styles['fw-bold']}`}>Dashboard</h1>
+
+			{/* Student Info Container */}
+			<div className={styles['student-info-container']}>
+				<div className={styles['student-info-left']}>
+					<h4>{studentData.StudentName}</h4>
+					<p>{studentData.StudentNumber}</p>
+				</div>
+				<div className={styles['student-info-right']}>
+					<h4>{studentData.CurrentStanding}</h4>
+					<h5>{studentData.StudentProgram}</h5>
 				</div>
 			</div>
+
+			{/* Adviser Container */}
+			<div className={styles['adviser-container']}>
+				<div className={styles['total-units']}>
+					<p>Total Units Taken: {CoursesTaken.reduce((sum, course) => sum + course.Units, 0)} Units</p>
+				</div>
+				<div className={styles['adviser']}>
+					<p>Adviser: {studentData.AdviserName}</p>
+				</div>
+			</div>
+
+			{/* Course Checklist */}
+			<h1 className={`${styles['adviser-checklist-title']} ${styles['h1']} ${styles['fw-bold']}`}>Student Course Checklist</h1>
+			<h4 className={`${styles['adviser-checklist-subtitle']} ${styles['h4']}`}>{studentData.StudentProgram}</h4>
+
+			{/* Render courses grouped by year and semester */}
+			{Object.keys(groupedCoursesTaken)
+				.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
+				.map((year) => (
+					<div key={year}>
+						<div className={styles['year-container']}>
+							<h2 className={styles['year-title']}>{year}</h2>
+						</div>
+						<div className={styles['semester-row']}>
+							{Object.keys(groupedCoursesTaken[year])
+								.sort((a, b) => a.localeCompare(b))
+								.map((semester) => renderSemester(year, semester, groupedCoursesTaken[year][semester]))}
+						</div>
+					</div>
+				))}
 		</div>
 	);
 }

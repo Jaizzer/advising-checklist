@@ -46,41 +46,8 @@ export default function StudentDashboard({ studentNumber }) {
 
 	return (
 		<div className="container">
-			{/* Dashboard Title */}
-			<h1 className="fw-bold">Dashboard</h1>
-
-			{/* Student Info Section */}
-			<div className="student-info-container">
-				<div className="student-info-left">
-					<h4>{StudentName}</h4>
-					<p>{studentNumber}</p>
-				</div>
-				<div className="student-info-right">
-					<div>
-						<h4>{CurrentStanding}</h4>
-						<h5>{StudentProgram}</h5>
-					</div>S11
-				</div>
-			</div>
-
-			{/* Adviser Info Section */}
-			<div className="adviser-container">
-				<div className="total-units">
-					<p>Total Units Taken: {CoursesTaken.reduce((total, course) => total + course.Units, 0)} Units</p>
-				</div>
-				<div className="adviser">
-					<p>Adviser: {AdviserName}</p>
-				</div>
-			</div>
-
-			{/* Student Course Checklist */}
-			<h1 className="h1 fw-bold">Student Course Checklist</h1>
-			<h4 className="h4">{StudentProgram}</h4>
-
 			{/* Render the SemestralRecords Component, passing the studentNumber */}
 			<SemestralRecords studentNumber={studentNumber} />
-
-		
 		</div>
 	);
 }
