@@ -3,7 +3,7 @@
 	width: 100%;
 	margin: 0 !important;
 	float: left;
-	width: 83.3333%;
+    padding: 0px !important;
 }
 
 /* Student Info Container */
@@ -89,14 +89,14 @@
 .year-container {
 	background-color: #243c56;
 	color: white;
-	font-size: 20px;
+	font-size: 20px !important; 
 	margin: 50px 0 -7.9px;
 }
 
 .year-title {
 	text-align: center;
 	font-weight: bold;
-	font-size: 16px;
+	font-size: 16px !important;
 }
 
 /* Semester Row */
@@ -130,13 +130,13 @@
 /* Semester Title */
 .semester-title {
 	margin: 0;
-	font-size: 16px;
+	font-size: 16px !important;
 }
 
 /* Total Units Text */
 .total-units {
 	margin: 0;
-	font-size: 14px;
+	font-size: 14px !important;
 	font-weight: bold;
 }
 

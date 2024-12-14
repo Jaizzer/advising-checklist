@@ -152,7 +152,7 @@ function AdviserDashboard({ adviserId }) {
 															className={`${styles['btn-custom']} btn btn-sm`}
 															onClick={() => handleViewChecklist(student)}
 														>
-															View Checklist
+															View
 														</button>
 													</td>
 												</tr>

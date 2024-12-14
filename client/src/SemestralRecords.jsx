@@ -90,7 +90,7 @@ export default function SemestralRecords({ studentNumber }) {
 										<td>{CourseId}</td>
 										<td>{CourseType}</td>
 										<td>{Units}</td>
-										<td>{Grade}</td>
+										<td>{Grade  === "Not Available" ? '--' : Grade}</td>
 										<td>{getStatus(Grade)}</td>
 									</tr>
 								);
