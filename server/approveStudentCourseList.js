@@ -10,17 +10,20 @@ export default async function approveStudentCourseList(studentNumber) {
 	try {
 		await connection.beginTransaction();
 
-		// Update StudentCourseList with "Taken" status and NULL grade
+		// Update StudentCourseList with "Taken" status and NULL grade, only for courses with "For Advising" status
 		const [updateResult] = await connection.query(
 			`UPDATE StudentCourseList
-       SET CourseStatus = 'Taken', Grade = NULL
-       WHERE StudentNumber = ?`,
+                SET CourseStatus = 'Taken', Grade = NULL
+                WHERE StudentNumber = ? AND CourseStatus = 'For Advising'`,
 			[studentNumber]
 		);
 
 		await connection.commit();
 
-		return { success: true, message: `Student course list approved successfully.` };
+		return {
+			success: true,
+			message: `${updateResult.affectedRows} course(s) successfully approved for student ${studentNumber}.`,
+		};
 	} catch (error) {
 		await connection.rollback();
 		throw new Error(error.message);
