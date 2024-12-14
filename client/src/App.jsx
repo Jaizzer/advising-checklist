@@ -1,76 +1,72 @@
 import { useState } from 'react';
 import MainContent from './MainContent';
+import './login.css'; // Import the CSS file
 
 export default function App() {
-	const [id, setId] = useState(''); // State for the ID input
-	const [name, setName] = useState(''); // State for the name
-	const [position, setPosition] = useState(''); // To store the position (Adviser/Student)
-	const [program, setProgram] = useState(''); // To store the program
-	const [isLoggedIn, setIsLoggedIn] = useState(false); // To track if the user is logged in
-	const [errorMessage, setErrorMessage] = useState(''); // To store the error message
+	const [id, setId] = useState('');
+	const [name, setName] = useState('');
+	const [position, setPosition] = useState('');
+	const [program, setProgram] = useState('');
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [errorMessage, setErrorMessage] = useState('');
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 
-		// Check if the ID is provided
 		if (!id) {
 			setErrorMessage('Please enter your ID.');
 			return;
 		}
 
 		try {
-			// Make a POST request to the backend API
 			const response = await fetch('http://localhost:9090/verifyID', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ id }), // Send the ID in the request body
+				body: JSON.stringify({ id }),
 			});
 
-			const data = await response.json(); // Parse the JSON response
-			console.log(data);
+			const data = await response.json();
 
 			if (response.ok) {
-				// Save the details in state variables
 				setId(data.id);
 				setName(data.name);
 				setPosition(data.position);
 				setProgram(data.program);
-				setIsLoggedIn(true); // Set the user as logged in
-				setErrorMessage(''); // Clear any previous error message
+				setIsLoggedIn(true);
+				setErrorMessage('');
 			} else {
-				// Display error message if the ID is invali
 				setErrorMessage('ID not found. Please try again.');
 				setIsLoggedIn(false);
 			}
 		} catch (error) {
-			// Handle any errors that occur during the fetch
 			console.error(error);
 		}
 	};
 
 	return (
 		<div>
-			{/* Conditionally render the login form or the MainContent */}
 			{!isLoggedIn ? (
-				<>
-					<h1>Enter Your ID</h1>
-					<form onSubmit={handleSubmit}>
+				<div className="login-container">
+					<h1 className="login-heading">Enter Your ID</h1>
+					<form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 						<input
 							type="text"
+							className="login-input"
 							value={id}
 							onChange={(e) => {
 								setId(e.target.value);
-								setErrorMessage(''); // Clear error message when user starts typing
+								setErrorMessage('');
 							}}
 							placeholder="Enter ID"
 						/>
-						<button type="submit">Log In</button>
+						<button type="submit" className="login-button">
+							Log In
+						</button>
 					</form>
-					{/* Display error message if it exists */}
-					{errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-				</>
+					{errorMessage && <p className="login-error">{errorMessage}</p>}
+				</div>
 			) : (
 				<MainContent id={id} name={name} position={position} program={program} setIsLoggedIn={setIsLoggedIn} />
 			)}
