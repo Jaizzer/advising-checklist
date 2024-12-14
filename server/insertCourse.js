@@ -14,7 +14,7 @@ export default async function insertCourse(courseData) {
 		CourseType,
 		PrescribedYear,
 		PrescribedSemester,
-		StudentProgram, // Extract StudentProgram from courseData
+		StudentProgram,
 	} = courseData;
 
 	// Establish a connection to the database from the connection pool
