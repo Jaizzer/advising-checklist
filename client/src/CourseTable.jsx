@@ -3,7 +3,7 @@ import styles from './ManageCoursePage.module.css'; // Ensure correct path to CS
 
 export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, isEditing }) {
 	const [courses, setCourses] = useState([]);
-	const [editingCourse, setEditingCourse] = useState(null); // Track the course being edited
+	const [editingCourse, setEditingCourse] = useState(null);
 	const [editedValues, setEditedValues] = useState({});
 
 	useEffect(() => {
@@ -12,7 +12,6 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 		fetch(`http://localhost:9090/courses/${encodedStudentProgram}`)
 			.then((response) => response.json())
 			.then((data) => {
-				// Filter courses based on the typeOfCourse prop
 				const filteredCourses = data.filter((course) => course.CourseType === typeOfCourse);
 				setCourses(filteredCourses);
 			});
@@ -20,20 +19,18 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 
 	const handleDelete = async (courseId) => {
 		try {
-			// Make DELETE request to the server
 			const response = await fetch('http://localhost:9090/deleteCourseFromProgramChecklist', {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json',
 				},
-				body: JSON.stringify({ courseId, program: studentProgram }), // Send courseId and studentProgram
+				body: JSON.stringify({ courseId, program: studentProgram }),
 			});
 
 			if (!response.ok) {
 				throw new Error('Failed to delete course');
 			}
 
-			// Immediately update state to remove the deleted course
 			setCourses((prevCourses) => prevCourses.filter((course) => course.CourseID !== courseId));
 		} catch (error) {
 			console.error('Error deleting course:', error);
@@ -49,8 +46,8 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 				CourseType: originalCourse.CourseType,
 				Units: originalCourse.Units,
 				CourseDescription: originalCourse.CourseDescription,
-				Prerequisites: originalCourse.Prerequisites, // Maintain as array
-				Corequisites: originalCourse.Corequisites, // Maintain as array
+				Prerequisites: originalCourse.Prerequisites || [],
+				Corequisites: originalCourse.Corequisites || [],
 			},
 		});
 	};
@@ -58,7 +55,6 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 	const handleSaveChanges = async (courseId) => {
 		const updatedCourseData = editedValues[courseId];
 
-		// Make the API request to save the changes
 		try {
 			const response = await fetch('http://localhost:9090/editCourseFromManageCourse', {
 				method: 'POST',
@@ -76,7 +72,6 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 				throw new Error('Failed to save changes');
 			}
 
-			// Reflect changes immediately in state and reset editing mode
 			setCourses((prevCourses) =>
 				prevCourses.map((course) =>
 					course.CourseID === courseId
@@ -87,7 +82,7 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 						: course
 				)
 			);
-			setEditingCourse(null); // Reset editing state
+			setEditingCourse(null);
 		} catch (error) {
 			console.error('Error saving course changes:', error);
 		}
@@ -95,6 +90,7 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 
 	const handleInputChange = (e, courseId, field) => {
 		const { value } = e.target;
+
 		setEditedValues((prevValues) => ({
 			...prevValues,
 			[courseId]: {
@@ -103,7 +99,7 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 					field === 'Units'
 						? Number(value)
 						: field === 'Prerequisites' || field === 'Corequisites'
-						? value.split(',').map((item) => item.trim())
+						? value // Store as a single string
 						: value,
 			},
 		}));
@@ -121,7 +117,7 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 						<th>Units</th>
 						<th>Prerequisite</th>
 						<th>Corequisite</th>
-						{isEditing && <th>Actions</th>} {/* Conditionally render Actions column */}
+						{isEditing && <th>Actions</th>}
 					</tr>
 				</thead>
 				<tbody>
@@ -171,11 +167,11 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 										<input
 											className={styles['action-related-input']}
 											type="text"
-											value={editedValues[course.CourseID]?.Prerequisites.join(', ') || course.Prerequisites.join(', ')}
+											value={editedValues[course.CourseID]?.Prerequisites || course.Prerequisites || ''}
 											onChange={(e) => handleInputChange(e, course.CourseID, 'Prerequisites')}
 										/>
 									) : (
-										course.Prerequisites.join(', ') || 'None'
+										(course.Prerequisites.length === 0 ? 'None' : course.Prerequisites)
 									)}
 								</td>
 								<td>
@@ -183,11 +179,12 @@ export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, 
 										<input
 											className={styles['action-related-input']}
 											type="text"
-											value={editedValues[course.CourseID]?.Corequisites.join(', ') || course.Corequisites.join(', ')}
+											value={editedValues[course.CourseID]?.Corequisites || course.Corequisites || ''}
 											onChange={(e) => handleInputChange(e, course.CourseID, 'Corequisites')}
 										/>
 									) : (
-										course.Corequisites.join(', ') || 'None'
+                                        (course.Corequisites.length === 0 ? 'None' : course.Corequisites)
+
 									)}
 								</td>
 								{isEditing && (

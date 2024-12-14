@@ -10,8 +10,8 @@ function AddCourseForm({ StudentProgram, setIsAdding }) {
 		College: 'College of Science',
 		Department: '',
 		GradingBasis: '',
-		Prerequisites: '',
-		Corequisites: '',
+		Prerequisites: '', // Will store a single string or comma-separated values
+		Corequisites: '', // Will store a single string or comma-separated values
 		CourseType: '',
 		PrescribedYear: '',
 		PrescribedSemester: '',
@@ -21,7 +21,25 @@ function AddCourseForm({ StudentProgram, setIsAdding }) {
 	// Handle form input change
 	function handleChange(event) {
 		const { id, value } = event.target;
-		setFormData({ ...formData, [id]: value });
+
+		// For Prerequisites and Corequisites, only split and trim if the value contains commas
+		if (id === 'Prerequisites' || id === 'Corequisites') {
+			if (value.includes(',')) {
+				// Only split and trim if there are multiple comma-separated values
+				setFormData({
+					...formData,
+					[id]: value.split(',').map((item) => item.trim()), // Split by comma and trim each value
+				});
+			} else {
+				// If it's a single value, keep it as is
+				setFormData({
+					...formData,
+					[id]: value,
+				});
+			}
+		} else {
+			setFormData({ ...formData, [id]: value });
+		}
 	}
 
 	// Handle form submission
@@ -29,6 +47,16 @@ function AddCourseForm({ StudentProgram, setIsAdding }) {
 		event.preventDefault();
 
 		const courseData = { ...formData };
+
+		// Handle Prerequisites and Corequisites to ensure they are correctly stored as an array
+		if (Array.isArray(courseData.Prerequisites)) {
+			// If it's an array (multiple values), join them into a string
+			courseData.Prerequisites = courseData.Prerequisites.join(', ');
+		}
+		if (Array.isArray(courseData.Corequisites)) {
+			// If it's an array (multiple values), join them into a string
+			courseData.Corequisites = courseData.Corequisites.join(', ');
+		}
 
 		try {
 			const response = await fetch('http://localhost:9090/addCourse', {
@@ -39,6 +67,7 @@ function AddCourseForm({ StudentProgram, setIsAdding }) {
 				body: JSON.stringify({ courseData }),
 			});
 
+            console.log(courseData)
 			const result = await response.json();
 
 			if (response.ok) {
@@ -54,8 +83,6 @@ function AddCourseForm({ StudentProgram, setIsAdding }) {
 
 	return (
 		<div className={styles['container-content']}>
-			{/* Back to Courses Button */}
-
 			<h1 className={styles['title_page']}>Add Course</h1>
 			<form className={styles['add-course-form']} onSubmit={handleSubmit}>
 				<div className={styles['form-grid']}>
