@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import SemestralRecords from './SemestralRecords'; // Assuming this component is in the same folder
+import styles from './SemestralRecords.module.css'; // Import the CSS module
 
 export default function StudentDashboard({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);
@@ -46,6 +47,34 @@ export default function StudentDashboard({ studentNumber }) {
 
 	return (
 		<div className="container">
+			<h1 className={`${styles['title_page']} ${styles['h1']} ${styles['fw-bold']}`}>Dashboard</h1>
+
+			{/* Student Info Container */}
+			<div className={styles['student-info-container']}>
+				<div className={styles['student-info-left']}>
+					<h4>{studentData.StudentName}</h4>
+					<p>{studentData.StudentNumber}</p>
+				</div>
+				<div className={styles['student-info-right']}>
+					<h4>{studentData.CurrentStanding}</h4>
+					<h5>{studentData.StudentProgram}</h5>
+				</div>
+			</div>
+
+			{/* Adviser Container */}
+			<div className={styles['adviser-container']}>
+				<div className={styles['total-units']}>
+					<p>Total Units Taken: {CoursesTaken.reduce((sum, course) => sum + course.Units, 0)} Units</p>
+				</div>
+				<div className={styles['adviser']}>
+					<p>Adviser: {studentData.AdviserName}</p>
+				</div>
+			</div>
+
+			{/* Course Checklist */}
+			<h1 className={`${styles['adviser-checklist-title']} ${styles['h1']} ${styles['fw-bold']}`}>Student Course Checklist</h1>
+			<h4 className={`${styles['adviser-checklist-subtitle']} ${styles['h4']}`}>{studentData.StudentProgram}</h4>
+
 			{/* Render the SemestralRecords Component, passing the studentNumber */}
 			<SemestralRecords studentNumber={studentNumber} />
 		</div>
