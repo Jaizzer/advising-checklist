@@ -113,8 +113,7 @@ export default function GetAdvised({ studentNumber, program }) {
 										<th scope="col">Course</th>
 										<th scope="col">Course Type</th>
 										<th scope="col">Units</th>
-										<th scope="col">Prerequisites</th>
-										<th scope="col">Corequisites</th>
+
 										<th scope="col">Actions</th>
 									</tr>
 								</thead>
@@ -124,10 +123,7 @@ export default function GetAdvised({ studentNumber, program }) {
 											<td>{course.CourseId}</td>
 											<td>{course.CourseType}</td>
 											<td>{course.Units}</td>
-											<td>
-												{course.Prerequisites && course.Prerequisites.length > 0 ? course.Prerequisites.join(', ') : 'None'}
-											</td>
-											<td>{course.Corequisites && course.Corequisites.length > 0 ? course.Corequisites.join(', ') : 'None'}</td>
+
 											<td>
 												<button className="btn btn-sm btn-primary" onClick={() => handleAddCourse(course)}>
 													Add
