@@ -22,7 +22,6 @@ export default function StudentAdvising({ handleBack, studentNumber, studentName
 					<div className={`${styles['advising-container']} ${styles['col-7']}`}>
 						<div className={`card shadow-sm ${styles['card-checklist']}`}>
 							<div className="card-body">
-								<h1 className="mb-0">Student Semestral Records</h1>
 								{/* Checklist Table */}
 								<SemestralRecords studentNumber={studentNumber} />
 							</div>
