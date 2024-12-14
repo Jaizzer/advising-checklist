@@ -57,7 +57,7 @@ export default function ManageCoursePage({ program, isAdviser }) {
 					<section className="mb-5">
 						<CourseTable
 							studentProgram={program}
-							tableTitle="Qualified Electives (9 Units)"
+							tableTitle="Qualified Electives"
 							typeOfCourse="Qualified Elective"
 							isEditing={isEdit} // Pass isEdit state as isEditing prop
 						/>
@@ -67,7 +67,7 @@ export default function ManageCoursePage({ program, isAdviser }) {
 					<section className="mb-5">
 						<CourseTable
 							studentProgram={program}
-							tableTitle="Foundation Courses (15 Units)"
+							tableTitle="Foundation Courses"
 							typeOfCourse="Foundation"
 							isEditing={isEdit} // Pass isEdit state as isEditing prop
 						/>
@@ -77,7 +77,7 @@ export default function ManageCoursePage({ program, isAdviser }) {
 					<section className="mb-5">
 						<CourseTable
 							studentProgram={program}
-							tableTitle="GE Requirements (36 Units)"
+							tableTitle="GE Requirements"
 							typeOfCourse="GE Requirement"
 							isEditing={isEdit} // Pass isEdit state as isEditing prop
 						/>
@@ -87,7 +87,7 @@ export default function ManageCoursePage({ program, isAdviser }) {
 					<section className="mb-5">
 						<CourseTable
 							studentProgram={program}
-							tableTitle="Other Required Courses (12 Units)"
+							tableTitle="Other Required Courses"
 							typeOfCourse="Other"
 							isEditing={isEdit} // Pass isEdit state as isEditing prop
 						/>
