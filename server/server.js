@@ -2,8 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { getCourse } from './course.js';
 import insertCourse from './insertCourse.js';
-import { insertAdviser } from './adviser.js';
-import { insertStudent } from './student.js';
 import { getStudentDashboardData } from './getStudentDashboardData.js';
 import { getCoursesThatAreStillNotTaken } from './getCoursesThatAreStillNotTaken.js';
 import insertStudentCourseListItems from './insertStudentCourseListItems.js';
@@ -45,27 +43,6 @@ app.get('/courses/:studentProgram', async (request, response) => {
 	response.json(courses);
 });
 
-app.post('/courses', async (request, response) => {
-	// Access the course to be added to the database
-	const course = request.body;
-
-	try {
-		await insertCourse(course);
-		// Respond with the received course data
-		response.status(201).json({
-			success: true,
-			message: 'Course successfully submitted!',
-			data: course, // Send the course data back as the response
-		});
-	} catch (error) {
-		// Handle any errors and respond with an error message
-		response.status(500).json({
-			success: false,
-			error: `Failed to submit course: ${error.message}`,
-		});
-	}
-});
-
 app.get('/dashboard/:studentNumber', async (request, response) => {
 	try {
 		const studentDashboardData = await getStudentDashboardData(request.params.studentNumber);
@@ -75,64 +52,9 @@ app.get('/dashboard/:studentNumber', async (request, response) => {
 	}
 });
 
-app.get('/shopCourses/:studentNumber', async (req, res) => {
-	try {
-		// Get courses that are still not taken by the student
-		const courses = await getCoursesThatAreStillNotTaken(req.params.studentNumber);
-
-		// Return the courses in the response
-		res.status(200).json(courses);
-	} catch (error) {
-		// If an error occurs, return the error message with a 400 status code
-		res.status(400).send({ error: error.message });
-	}
-});
-
-app.post('/advisers', async (req, res) => {
-	const adviserData = req.body;
-
-	try {
-		// Assume insertAdviser is a function to handle database insertion
-		const result = await insertAdviser(adviserData);
-
-		if (result.success) {
-			res.status(201).json({
-				success: true,
-				message: 'Adviser successfully submitted!',
-				data: adviserData,
-			});
-		} else {
-			res.status(500).json({
-				success: false,
-				error: 'Failed to insert adviser into the database.',
-			});
-		}
-	} catch (error) {
-		res.status(500).json({
-			success: false,
-			error: `Error occurred: ${error.message}`,
-		});
-	}
-});
-
-app.post('/students', async (req, res) => {
-	const studentData = req.body;
-	try {
-		const result = await insertStudent(studentData);
-		if (result.success) {
-			res.status(201).json({ message: 'Student successfully added!', result: result.result });
-		} else {
-			res.status(400).json({ error: result.error });
-		}
-	} catch (error) {
-		res.status(500).json({ error: `Server error: ${error.message}` });
-	}
-});
-
 // DELETE route to remove a course from the ProgramChecklist
 app.delete('/deleteCourseFromProgramChecklist', async (req, res) => {
-	const { courseId, program } = req.body; // Extract data from the request body
-
+	const { courseId, program } = req.body;
 	try {
 		// Validate required fields
 		if (!courseId || !program) {
@@ -410,10 +332,8 @@ app.post('/verifyID', async (req, res) => {
 		// Call the verifyID function to determine whether the ID belongs to an Adviser, Student, or is invalid
 		const result = await verifyID(id);
 
-		if (result === 'Adviser' || result === 'Student') {
-			res.status(200).json({
-				position: result,
-			});
+		if (result.position === 'Adviser' || result.position === 'Student') {
+			res.status(200).json(result);
 		} else {
 			res.status(400).json({
 				success: false,

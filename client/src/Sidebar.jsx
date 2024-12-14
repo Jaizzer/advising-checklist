@@ -23,15 +23,6 @@ export default function Sidebar({ onNavItemClick, name, program, position }) {
 					</button>
 				</li>
 
-				{/* Conditionally render Student Records Link for Adviser only */}
-				{position === 'Adviser' && (
-					<li className="nav-item">
-						<button className="nav-link" onClick={() => onNavItemClick('Student Records')}>
-							<img src={studentRecordsIcon} alt="Student Records" /> Student Records
-						</button>
-					</li>
-				)}
-
 				{/* Advising Records Link */}
 				<li className="nav-item">
 					<button className="nav-link" onClick={() => onNavItemClick('Course Checklist')}>
@@ -42,7 +33,8 @@ export default function Sidebar({ onNavItemClick, name, program, position }) {
 				{/* Manage Courses Link for both Adviser and Student */}
 				<li className="nav-item">
 					<button className="nav-link" onClick={() => onNavItemClick('Manage Courses')}>
-						<img src={manageCoursesIcon} alt="Manage Courses" />Courses
+						<img src={manageCoursesIcon} alt="Manage Courses" />
+						Courses
 					</button>
 				</li>
 
@@ -68,7 +60,9 @@ export default function Sidebar({ onNavItemClick, name, program, position }) {
 				<p className="mb-1">
 					<strong>{name}</strong>
 				</p>
-				<p className="text-muted">{program} ({position})</p>
+				<p className="text-muted">
+					{program} ({position})
+				</p>
 			</div>
 		</nav>
 	);
