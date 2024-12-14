@@ -1,6 +1,6 @@
 import pool from './database.js';
 
-// Function to fetch student dashboard data with transaction handling and academic year/semester taken
+// Function to fetch student dashboard data with grades and status
 export async function getStudentDashboardData(studentNumber) {
 	// Ensure studentNumber is provided before proceeding
 	if (!studentNumber) {
@@ -17,17 +17,17 @@ export async function getStudentDashboardData(studentNumber) {
 		// Query to fetch student details, adviser information, and current standing
 		const [studentResult] = await connection.query(
 			`SELECT
-        s.StudentNumber,
-        s.StudentProgram,
-        s.S_FirstName,
-        s.S_MiddleName,
-        s.S_LastName,
-        a.A_FirstName AS AdviserFirstName,
-        a.A_LastName AS AdviserLastName,
-        s.CurrentStanding
-      FROM Student s
-      LEFT JOIN Adviser a ON s.AdviserID = a.AdviserID
-      WHERE s.StudentNumber = ?`,
+                s.StudentNumber,
+                s.StudentProgram,
+                s.S_FirstName,
+                s.S_MiddleName,
+                s.S_LastName,
+                a.A_FirstName AS AdviserFirstName,
+                a.A_LastName AS AdviserLastName,
+                s.CurrentStanding
+            FROM Student s
+            LEFT JOIN Adviser a ON s.AdviserID = a.AdviserID
+            WHERE s.StudentNumber = ?`,
 			[studentNumber]
 		);
 
@@ -42,19 +42,19 @@ export async function getStudentDashboardData(studentNumber) {
 		// Get the list of all courses that the student has taken, including grades, academic year, and semester taken
 		const [courseResult] = await connection.query(
 			`SELECT
-        c.CourseId,
-        pc.CourseType,
-        c.Units,
-        pc.PrescribedYear,
-        pc.PrescribedSemester,
-        scl.Grade,
-        scl.AcademicYear,
-        scl.Semester
-      FROM Course c
-      JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
-      JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = c.CourseId
-      WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-      ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
+                c.CourseId,
+                pc.CourseType,
+                c.Units,
+                pc.PrescribedYear,
+                pc.PrescribedSemester,
+                scl.Grade,
+                scl.AcademicYear,
+                scl.Semester
+            FROM Course c
+            JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
+            JOIN StudentCourseList scl ON scl.StudentNumber = ? AND scl.CourseId = c.CourseId
+            WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
+            ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
 			[studentNumber, studentNumber]
 		);
 
@@ -64,33 +64,45 @@ export async function getStudentDashboardData(studentNumber) {
 			throw new Error('No courses found for the student.');
 		}
 
-		// Prepare the course data in the desired format
-		const courses = courseResult.map((course) => ({
-			CourseId: course.CourseId,
-			CourseType: course.CourseType || 'Not Assigned', // Course type is optional
-			Units: course.Units,
-			PrescribedYear: course.PrescribedYear,
-			PrescribedSemester: course.PrescribedSemester,
-			Grade: course.Grade || 'Not Available',
-			AcademicYearTaken: course.AcademicYear,
-			SemesterTaken: course.Semester,
-		}));
+		// Prepare the course data in the desired format with grades and status
+		const courses = courseResult.map((course) => {
+			let status;
+			if (course.Grade === 5) {
+				status = 'Fail';
+			} else if (course.Grade === 'INC') {
+				status = 'INC';
+			} else {
+				status = 'Passed';
+			}
+
+			return {
+				CourseId: course.CourseId,
+				CourseType: course.CourseType || 'Not Assigned', // Course type is optional
+				Units: course.Units,
+				PrescribedYear: course.PrescribedYear,
+				PrescribedSemester: course.PrescribedSemester,
+				Grade: course.Grade || 'Not Available',
+				Status: status,
+				AcademicYearTaken: course.AcademicYear,
+				SemesterTaken: course.Semester,
+			};
+		});
 
 		// Get the full course checklist based on the student's program and current standing
 		const [courseChecklistResult] = await connection.query(
 			`SELECT
-        c.CourseId,
-        pc.CourseType,
-        c.Units,
-        pc.PrescribedYear,
-        pc.PrescribedSemester
-      FROM Course c
-      JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
-      WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
-      AND pc.PrescribedYear <= (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)
-      AND pc.PrescribedYear != 'None' 
-      AND pc.PrescribedSemester != 'None'
-      ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
+                c.CourseId,
+                pc.CourseType,
+                c.Units,
+                pc.PrescribedYear,
+                pc.PrescribedSemester
+            FROM Course c
+            JOIN ProgramChecklist pc ON c.CourseId = pc.CourseId
+            WHERE pc.StudentProgram = (SELECT StudentProgram FROM Student WHERE StudentNumber = ?)
+            AND pc.PrescribedYear <= (SELECT CurrentStanding FROM Student WHERE StudentNumber = ?)
+            AND pc.PrescribedYear != 'None' 
+            AND pc.PrescribedSemester != 'None'
+            ORDER BY pc.PrescribedYear DESC, pc.PrescribedSemester DESC`,
 			[studentNumber, studentNumber]
 		);
 
