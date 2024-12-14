@@ -29,6 +29,7 @@ export default function App() {
 			});
 
 			const data = await response.json(); // Parse the JSON response
+            console.log(data)
 
 			if (response.ok) {
 				// Save the details in state variables
@@ -39,14 +40,14 @@ export default function App() {
 				setIsLoggedIn(true); // Set the user as logged in
 				setErrorMessage(''); // Clear any previous error message
 			} else {
-				// Display error message if the ID is invalid
-				setErrorMessage(data.message || 'ID not found. Please try again.');
-				setIsLoggedIn(false);
+				// Display error message if the ID is invali
+                setErrorMessage('ID not found. Please try again.');
+                setIsLoggedIn(false);
+    
 			}
 		} catch (error) {
 			// Handle any errors that occur during the fetch
-			setErrorMessage('An error occurred while verifying your ID. Please try again.');
-			setIsLoggedIn(false);
+            console.error(error)
 		}
 	};
 
