@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import MainContent from './MainContent';
+import logo from './assets/Logo.svg'; // Import the logo
 import './login.css'; // Import the CSS file
 
 export default function App() {
@@ -49,8 +50,11 @@ export default function App() {
 		<div>
 			{!isLoggedIn ? (
 				<div className="login-container">
+					<div className="login-logo">
+						<img src={logo} alt="Logo" />
+					</div>
 					<h1 className="login-heading">Enter Your ID</h1>
-					<form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+					<form onSubmit={handleSubmit} className="login-form">
 						<input
 							type="text"
 							className="login-input"
