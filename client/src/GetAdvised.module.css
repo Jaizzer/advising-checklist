@@ -1,0 +1,155 @@
+/* General Container */
+.container-content {
+	width: 100%;
+	margin: 0 !important;
+}
+
+/* Title Section */
+.student-advising-title {
+	text-align: center;
+	margin: 20px 0 50px;
+	color: #801338;
+}
+
+.student-advising-title p,
+.student-advising-title h1 {
+	margin: 0 !important;
+	font-size: 20px;
+	text-align: center;
+}
+
+.student-advising-title h1 {
+	font-size: 60px;
+}
+
+#sem_ay {
+	color: #000;
+}
+
+/* Card Styling */
+.advising-container {
+	width: 100% !important;
+}
+
+.advising-container .col-5,
+.advising-container .col-7 {
+	padding: 10px;
+}
+
+.card-body h1,
+.card-body h2 {
+	color: #801338 !important;
+	font-weight: 600;
+}
+
+.card-checklist,
+.card-list {
+	border-radius: 30px;
+	padding: 20px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card-checklist {
+	min-height: 70vh;
+	min-width: 60vh;
+	width: 100%;
+	border: #e2e8f0;
+}
+
+.card-list {
+	min-height: 70vh;
+	max-width: 50vh;
+	border: none;
+}
+
+.card-body {
+	text-align: center;
+    height: 700px;
+    overflow: scroll;
+    padding: 0px !important;
+}
+
+.card-body p {
+	margin: 0 !important;
+	font-size: 15px;
+	font-weight: 500;
+	color: #000;
+}
+
+/* Dropdown Filter */
+.dropdown {
+	margin-left: 12px;
+}
+
+.dropdown-toggle {
+	border: none;
+	color: #801338 !important;
+	background-color: white !important;
+	box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+	border-radius: 30px;
+}
+
+/* Tables */
+thead {
+	background-color: #d9d9d9;
+	text-transform: uppercase;
+}
+
+thead .sem-label {
+	background-color: #801338;
+	color: #fff;
+	font-weight: normal;
+	padding: 0;
+}
+
+/* Remarks Section */
+.advising-remarks {
+	border-radius: 10px;
+	padding: 20px;
+}
+
+.fixed-size {
+	width: 100%;
+	height: 150px;
+	resize: none !important;
+}
+
+/* Buttons */
+.advising-buttons {
+	width: 100%;
+}
+
+.advising-buttons button,
+.update-btn-container button {
+	transition: all 0.3s ease;
+	text-transform: uppercase;
+	font-size: 14px;
+}
+
+.advising-buttons .btn-outline-secondary,
+.update-btn-container button {
+	border-color: #801338;
+	color: #801338;
+}
+
+.advising-buttons .btn-outline-secondary:hover,
+.update-btn-container button {
+	background-color: #801338;
+	color: #fff;
+}
+
+.advising-buttons .btn-primary {
+	background-color: #801338;
+	border-color: #801338;
+}
+
+.advising-buttons .btn-primary:hover {
+	background-color: #9e1e43;
+	border-color: #9e1e43;
+}
+
+.row {
+	display: grid !important;
+	grid-template-columns: 500px 800px !important;
+	gap: 100px;
+}

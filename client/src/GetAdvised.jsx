@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styles from './GetAdvised.module.css'; // Import CSS module
 
 export default function GetAdvised({ studentNumber, program }) {
 	const [coursesNotTaken, setCoursesNotTaken] = useState([]);
@@ -98,22 +99,21 @@ export default function GetAdvised({ studentNumber, program }) {
 	}
 
 	return (
-		<div className="row">
+		<div className={styles['row']}>
 			{/* Left Column: Checklist */}
-			<div className="col-7">
-				<div className="card shadow-sm card-checklist">
-					<div className="card-body">
+			<div className={`col-7 ${styles['advising-container']}`}>
+				<div className={`card shadow-sm ${styles['card-checklist']}`}>
+					<div className={`card-body ${styles['card-body']}`}>
 						<h1 className="mb-0">Student Course Checklist</h1>
-						<p>{program}</p>
+						<h2>{program}</h2>
 
-						<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-							<table className="table table-hover align-middle">
+						<div className={`table-responsive ${styles['table-responsive']}`}>
+							<table className={`table table-hover align-middle ${styles['table']}`}>
 								<thead>
 									<tr>
 										<th scope="col">Course</th>
 										<th scope="col">Course Type</th>
 										<th scope="col">Units</th>
-
 										<th scope="col">Actions</th>
 									</tr>
 								</thead>
@@ -123,9 +123,11 @@ export default function GetAdvised({ studentNumber, program }) {
 											<td>{course.CourseId}</td>
 											<td>{course.CourseType}</td>
 											<td>{course.Units}</td>
-
 											<td>
-												<button className="btn btn-sm btn-primary" onClick={() => handleAddCourse(course)}>
+												<button
+													className={`btn btn-sm btn-primary ${styles['btn-primary']}`}
+													onClick={() => handleAddCourse(course)}
+												>
 													Add
 												</button>
 											</td>
@@ -134,19 +136,21 @@ export default function GetAdvised({ studentNumber, program }) {
 								</tbody>
 							</table>
 						</div>
-						<p className="text-end">TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}</p>
+						<p className={`text-end ${styles['text-end']}`}>
+							TOTAL UNITS: {coursesNotTaken.reduce((total, course) => total + (course.Units || 0), 0)}
+						</p>
 					</div>
 				</div>
 			</div>
 
 			{/* Right Column: Advising */}
-			<div className="col-5">
-				<div className="card shadow-sm card-list">
-					<div className="card-body">
+			<div className={`col-5 ${styles['advising-container']}`}>
+				<div className={`card shadow-sm ${styles['card-list']}`}>
+					<div className={`card-body ${styles['card-body']}`}>
 						<h1 className="mb-0">Course List for Advising</h1>
 
-						<div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-							<table className="table table-hover align-middle">
+						<div className={`table-responsive ${styles['table-responsive']}`}>
+							<table className={`table table-hover align-middle ${styles['table']}`}>
 								<thead>
 									<tr>
 										<th scope="col">Course</th>
@@ -162,7 +166,10 @@ export default function GetAdvised({ studentNumber, program }) {
 											<td>{course.CourseType}</td>
 											<td>{course.Units}</td>
 											<td>
-												<button className="btn btn-sm btn-danger" onClick={() => handleDeleteCourse(course)}>
+												<button
+													className={`btn btn-sm btn-danger ${styles['btn-danger']}`}
+													onClick={() => handleDeleteCourse(course)}
+												>
 													Remove
 												</button>
 											</td>
@@ -171,12 +178,12 @@ export default function GetAdvised({ studentNumber, program }) {
 								</tbody>
 							</table>
 						</div>
-						<p className="text-end">
+						<p className={`text-end ${styles['text-end']}`}>
 							TOTAL UNITS: {[...coursesForAdvising, ...coursesToAdd].reduce((total, course) => total + (course.Units || 0), 0)}
 						</p>
-						<div className="advising-buttons d-flex gap-2 mt-4">
+						<div className={`advising-buttons d-flex gap-2 mt-4 ${styles['advising-buttons']}`}>
 							{(coursesToAdd.length > 0 || coursesToDelete.length > 0) && (
-								<button className="btn btn-primary flex-grow-1" onClick={handleSubmitCourseList}>
+								<button className={`btn btn-primary flex-grow-1 ${styles['btn-primary']}`} onClick={handleSubmitCourseList}>
 									Save Course List
 								</button>
 							)}
