@@ -29,7 +29,7 @@ export default function App() {
 			});
 
 			const data = await response.json(); // Parse the JSON response
-            console.log(data)
+			console.log(data);
 
 			if (response.ok) {
 				// Save the details in state variables
@@ -41,13 +41,12 @@ export default function App() {
 				setErrorMessage(''); // Clear any previous error message
 			} else {
 				// Display error message if the ID is invali
-                setErrorMessage('ID not found. Please try again.');
-                setIsLoggedIn(false);
-    
+				setErrorMessage('ID not found. Please try again.');
+				setIsLoggedIn(false);
 			}
 		} catch (error) {
 			// Handle any errors that occur during the fetch
-            console.error(error)
+			console.error(error);
 		}
 	};
 

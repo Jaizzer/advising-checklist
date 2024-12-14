@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import styles from './StudentAdvising.module.css';
 
 export default function SemestralRecords({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);
@@ -55,15 +54,23 @@ export default function SemestralRecords({ studentNumber }) {
 		return grouped;
 	};
 
-	const renderSemester = (semester, courses) => {
+	const getStatus = (grade) => {
+		if (grade === 'Not Available') return 'ONGOING';
+		if (grade === 5) return 'FAIL';
+		if (grade === 4) return 'INC';
+		if (grade >= 1 && grade <= 3) return 'PASSED';
+		return 'Unknown'; // Fallback for unexpected grades
+	};
+
+	const renderSemester = (year, semester, courses) => {
 		const totalUnits = courses.reduce((sum, course) => sum + course.Units, 0);
 		return (
-			<div key={semester} className={`${styles['checklist-table']} table-responsive mt-4`}>
+			<div key={`${year}-${semester}`} className="table-responsive mt-4">
 				<table className="table table-hover align-middle">
 					<thead>
 						<tr>
-							<th colSpan="7" className={`text-start ${styles['sem-label']}`}>
-								{semester}
+							<th colSpan="8" className="text-start sem-label">
+								{`${year} - ${semester}`}
 							</th>
 						</tr>
 						<tr>
@@ -71,8 +78,7 @@ export default function SemestralRecords({ studentNumber }) {
 							<th scope="col">Course Type</th>
 							<th scope="col">Units</th>
 							<th scope="col">Grade</th>
-							<th scope="col">Semester Taken</th>
-							<th scope="col">A.Y Taken</th>
+							<th scope="col">Status</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -84,8 +90,7 @@ export default function SemestralRecords({ studentNumber }) {
 									<td>{CourseType}</td>
 									<td>{Units}</td>
 									<td>{Grade}</td>
-									<td>{PrescribedSemester}</td>
-									<td>{AcademicYearTaken}</td>
+									<td>{getStatus(Grade)}</td>
 								</tr>
 							);
 						})}
@@ -99,17 +104,22 @@ export default function SemestralRecords({ studentNumber }) {
 	const groupedCoursesTaken = groupCoursesByYearAndSemester(CoursesTaken);
 
 	return (
-		<div className={`col-7 ${styles['advising-container']}`}>
-			<div className={`card shadow-sm ${styles['card-checklist']}`}>
+		<div className="advising-container">
+			<div className="card shadow-sm card-checklist">
 				<div className="card-body">
 					{/* Render courses grouped by year and semester */}
 					{Object.keys(groupedCoursesTaken)
 						.sort((a, b) => parseInt(a.split(' ')[1]) - parseInt(b.split(' ')[1]))
 						.map((year) => (
 							<div key={year}>
-								{Object.keys(groupedCoursesTaken[year])
-									.sort((a, b) => a.localeCompare(b))
-									.map((semester) => renderSemester(semester, groupedCoursesTaken[year][semester]))}
+								<div className="year-container">
+									<h2 className="year-title">{year}</h2>
+								</div>
+								<div className="semester-row">
+									{Object.keys(groupedCoursesTaken[year])
+										.sort((a, b) => a.localeCompare(b))
+										.map((semester) => renderSemester(year, semester, groupedCoursesTaken[year][semester]))}
+								</div>
 							</div>
 						))}
 				</div>
