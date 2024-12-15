@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import styles from './AddCourseForm.module.css'; // Import the CSS module
+import styles from './AddCourseForm.module.css'; 
 
 function AddCourseForm({ StudentProgram, setIsAdding }) {
 	const [formData, setFormData] = useState({

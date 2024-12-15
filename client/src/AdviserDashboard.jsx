@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import StudentAdvising from './StudentAdvising'; // Import the StudentAdvising component
+import StudentAdvising from './StudentAdvising'; 
 
 function AdviserDashboard({ adviserId }) {
 	const [adviserData, setAdviserData] = useState(null);

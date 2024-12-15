@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import CourseTable from './CourseTable'; // Make sure this path is correct
-import styles from './ManageCoursePage.module.css'; // Create a corresponding CSS module file
+import CourseTable from './CourseTable';
+import styles from './ManageCoursePage.module.css'; 
 import AddCourseForm from './AddCourseForm';
 
 export default function ManageCoursePage({ program, isAdviser }) {

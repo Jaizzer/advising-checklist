@@ -211,7 +211,7 @@ export async function editCourse(currentCourseID, updatedCourseData) {
 			return rows[0].count > 0;
 		};
 
-		// Step 0: Check if the current course exists
+		// Check if the current course exists
 		const courseExists = await checkIfCourseExists(currentCourseID);
 		if (!courseExists) {
 			throw new Error(`Course with ID ${currentCourseID} does not exist.`);

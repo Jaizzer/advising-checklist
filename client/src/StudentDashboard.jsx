@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import SemestralRecords from './SemestralRecords'; // Assuming this component is in the same folder
-import styles from './SemestralRecords.module.css'; // Import the CSS module
+import SemestralRecords from './SemestralRecords'; 
+import styles from './SemestralRecords.module.css'; 
 
 export default function StudentDashboard({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);

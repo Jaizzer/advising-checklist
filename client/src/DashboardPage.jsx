@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from './Dashboard.module.css'; // Import the CSS module
+import styles from './Dashboard.module.css'; 
 import forAdvisingIcon from './assets/Icon_ForAdvising.svg';
 import accomplishedIcon from './assets/Icon_Accomplished.svg';
 import totalStudentsIcon from './assets/Icon_TotalStudents.svg';

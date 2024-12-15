@@ -1,6 +1,6 @@
 import pool from './database.js';
 
-// Function to delete a course from the ProgramChecklist
+// Function to delete a course from the ProgramChecklist page in front end
 export default async function deleteCourseFromProgramChecklist(courseId, studentProgram) {
 	// Establish a connection to the database from the connection pool
 	const connection = await pool.getConnection();

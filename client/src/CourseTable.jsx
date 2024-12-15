@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from './ManageCoursePage.module.css'; // Ensure correct path to CSS module
+import styles from './ManageCoursePage.module.css';
 
 export default function CourseTable({ studentProgram, tableTitle, typeOfCourse, isEditing }) {
 	const [courses, setCourses] = useState([]);

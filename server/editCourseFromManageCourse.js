@@ -13,7 +13,7 @@ export default async function editCourseFromManageCourse(currentCourseID, update
 			return rows[0].count > 0;
 		};
 
-		// Step 0: Check if the current course exists
+		// Check if the current course exists
 		const courseExists = await checkIfCourseExists(currentCourseID);
 		if (!courseExists) {
 			throw new Error(`Course with ID ${currentCourseID} does not exist.`);
@@ -22,7 +22,7 @@ export default async function editCourseFromManageCourse(currentCourseID, update
 		// Start a transaction to ensure atomicity of the operations
 		await connection.beginTransaction();
 
-		// Step 1: Update the course details in the 'Course' table using the current CourseID
+		// Update the course details in the 'Course' table using the current CourseID
 		await connection.query(
 			`UPDATE Course
              SET CourseId = ?, CourseDescription = ?, Units = ?
@@ -30,7 +30,7 @@ export default async function editCourseFromManageCourse(currentCourseID, update
 			[newCourseID, CourseDescription, Units, currentCourseID]
 		);
 
-		// Step 2: Update the CourseType in the ProgramChecklist table
+		// Update the CourseType in the ProgramChecklist table
 		await connection.query(
 			`UPDATE ProgramChecklist 
 			 SET CourseId = ?, CourseType = ? 
@@ -38,7 +38,7 @@ export default async function editCourseFromManageCourse(currentCourseID, update
 			[newCourseID, CourseType, currentCourseID, studentProgram]
 		);
 
-		// Step 3: Delete old Prerequisites and Corequisites based on the newCourseID
+		// Delete old Prerequisites and Corequisites based on the newCourseID
 		await connection.query(`DELETE FROM CoursePrerequisite WHERE CourseId = ?`, [newCourseID]);
 		await connection.query(`DELETE FROM CourseCorequisite WHERE CourseId = ?`, [newCourseID]);
 
@@ -53,7 +53,7 @@ export default async function editCourseFromManageCourse(currentCourseID, update
 			}
 		}
 
-		// Step 5: Insert new Corequisites
+		// Insert new Corequisites
 		if (Array.isArray(Corequisites) && Corequisites.length > 0) {
 			for (const corequisite of Corequisites) {
 				await connection.query(

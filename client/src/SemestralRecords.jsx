@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from './SemestralRecords.module.css'; // Import the CSS module
+import styles from './SemestralRecords.module.css'; 
 
 export default function SemestralRecords({ studentNumber }) {
 	const [studentData, setStudentData] = useState(null);
@@ -56,7 +56,7 @@ export default function SemestralRecords({ studentNumber }) {
 	};
 
 	const getStatus = (grade) => {
-		if (grade === 'Not Available') return 'ONGOING';
+		if (grade === 'Not Available') return 'FOR ADVISING';
 		if (grade === 5) return 'FAIL';
 		if (grade === 4) return 'INC';
 		if (grade >= 1 && grade <= 3) return 'PASSED';
@@ -85,6 +85,7 @@ export default function SemestralRecords({ studentNumber }) {
 						<tbody>
 							{courses.map((course, index) => {
 								const { CourseId, CourseType, Units, Grade } = course;
+                                if (Grade != "Not Available"){
 								return (
 									<tr key={index}>
 										<td>{CourseId}</td>
@@ -93,7 +94,9 @@ export default function SemestralRecords({ studentNumber }) {
 										<td>{Grade  === "Not Available" ? '--' : Grade}</td>
 										<td>{getStatus(Grade)}</td>
 									</tr>
-								);
+								)} else {
+                                    return null;
+                                }
 							})}
 						</tbody>
 					</table>

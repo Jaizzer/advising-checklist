@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import styles from './GetAdvised.module.css'; // Import CSS module
+import styles from './GetAdvised.module.css';
 
 export default function GetAdvised({ studentNumber, program }) {
 	const [coursesNotTaken, setCoursesNotTaken] = useState([]);

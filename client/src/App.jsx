@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import MainContent from './MainContent';
-import logo from './assets/Logo.svg'; // Import the logo
-import './login.css'; // Import the CSS file
+import logo from './assets/Logo.svg'; 
+import './login.css'; 
 
 export default function App() {
 	const [id, setId] = useState('');
